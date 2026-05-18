@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import {
   formatCategoryLabel,
@@ -304,6 +304,62 @@ function getSlotOptions(slot: Slot, products: CatalogProduct[], selectedProductI
   return products.filter((product) => slot.accepts(product) && !selectedProductIds.has(product.id));
 }
 
+function loadCanvasImage(src: string) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new window.Image();
+    image.crossOrigin = "anonymous";
+    image.onload = () => resolve(image);
+    image.onerror = reject;
+    image.src = src;
+  });
+}
+
+function drawContainedImage(
+  context: CanvasRenderingContext2D,
+  image: HTMLImageElement,
+  frame: DOMRect | { x: number; y: number; width: number; height: number },
+  pixelRatio: number,
+) {
+  const imageRatio = image.naturalWidth / image.naturalHeight;
+  const frameRatio = frame.width / frame.height;
+  const width = imageRatio > frameRatio ? frame.width : frame.height * imageRatio;
+  const height = imageRatio > frameRatio ? frame.width / imageRatio : frame.height;
+  const x = frame.x + (frame.width - width) / 2;
+  const y = frame.y + (frame.height - height) / 2;
+
+  context.save();
+  context.shadowColor = "rgba(0, 0, 0, 0.38)";
+  context.shadowBlur = 18 * pixelRatio;
+  context.shadowOffsetY = 10 * pixelRatio;
+  context.drawImage(image, x, y, width, height);
+  context.restore();
+}
+
+function drawCoveredImage(
+  context: CanvasRenderingContext2D,
+  image: HTMLImageElement,
+  width: number,
+  height: number,
+) {
+  const scale = Math.max(width / image.naturalWidth, height / image.naturalHeight);
+  const sourceWidth = width / scale;
+  const sourceHeight = height / scale;
+  const sourceX = (image.naturalWidth - sourceWidth) / 2;
+  const sourceY = (image.naturalHeight - sourceHeight) / 2;
+
+  context.drawImage(
+    image,
+    sourceX,
+    sourceY,
+    sourceWidth,
+    sourceHeight,
+    0,
+    0,
+    width,
+    height,
+  );
+}
+
 function ProductOption({
   product,
   onClick,
@@ -393,6 +449,7 @@ function SlotMenu({
 function SlotControl({
   assignedSlot,
   isOpen,
+  showPlaceholder,
   options,
   onOpen,
   onSelectProduct,
@@ -401,6 +458,7 @@ function SlotControl({
 }: {
   assignedSlot: AssignedSlot;
   isOpen: boolean;
+  showPlaceholder: boolean;
   options: CatalogProduct[];
   onOpen: () => void;
   onSelectProduct: (id: string) => void;
@@ -411,8 +469,13 @@ function SlotControl({
   const placement = slot.placement(product ?? undefined);
   const zIndex = isOpen ? "z-[90]" : slot.zIndex ?? "z-30";
 
+  if (!product && !showPlaceholder) return null;
+
   return (
-    <div className={`absolute ${placement.slot} ${zIndex}`}>
+    <div
+      className={`absolute ${placement.slot} ${zIndex}`}
+      data-preview-placeholder={!product ? "true" : undefined}
+    >
       {product ? (
         <button
           type="button"
@@ -420,6 +483,7 @@ function SlotControl({
           className={`relative block ${placement.sizeClass} transition duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f5b76b]`}
           aria-label={`Change or remove ${product.name}`}
           aria-expanded={isOpen}
+          data-preview-slot={slot.id}
         >
           <Image
             src={getProductImage(product)}
@@ -464,8 +528,11 @@ export function WorkspacePreview({
   onRemoveProduct,
   onReplaceProduct,
 }: WorkspacePreviewProps) {
+  const previewRef = useRef<HTMLElement>(null);
   const [openSlotId, setOpenSlotId] = useState<string | null>(null);
   const [slotOverrides, setSlotOverrides] = useState<SlotOverrides>({});
+  const [showPlaceholders, setShowPlaceholders] = useState(true);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const selectedProductList = useMemo(
     () => selectedProducts.map(({ product }) => product),
@@ -495,8 +562,90 @@ export function WorkspacePreview({
     product: assignedProducts.get(slot.id) ?? null,
   }));
 
+  const downloadPreview = async () => {
+    if (!previewRef.current || isDownloading) return;
+
+    setIsDownloading(true);
+    setOpenSlotId(null);
+
+    try {
+      await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
+
+      const previewElement = previewRef.current;
+      const previewRect = previewElement.getBoundingClientRect();
+      const pixelRatio = 2;
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(previewRect.width * pixelRatio);
+      canvas.height = Math.round(previewRect.height * pixelRatio);
+
+      const context = canvas.getContext("2d");
+      if (!context) return;
+
+      const background = await loadCanvasImage("/products/roombg.png");
+      drawCoveredImage(context, background, canvas.width, canvas.height);
+
+      const overlay = context.createLinearGradient(0, 0, 0, canvas.height);
+      overlay.addColorStop(0, "rgba(0, 0, 0, 0.05)");
+      overlay.addColorStop(0.55, "rgba(0, 0, 0, 0)");
+      overlay.addColorStop(1, "rgba(0, 0, 0, 0.18)");
+      context.fillStyle = overlay;
+      context.fillRect(0, 0, canvas.width, canvas.height);
+
+      const exportSlots = [...assignedSlots].sort((left, right) => {
+        const order = [
+          "wall-display",
+          "monitor-center",
+          "monitor-left",
+          "right-display",
+          "smart-left",
+          "audio-left",
+          "desk-accessory",
+          "compact-computer",
+          "keyboard",
+          "mouse",
+          "webcam",
+        ];
+
+        return order.indexOf(left.slot.id) - order.indexOf(right.slot.id);
+      });
+
+      for (const assignedSlot of exportSlots) {
+        if (!assignedSlot.product) continue;
+        const slotElement = previewElement.querySelector<HTMLElement>(
+          `[data-preview-slot="${assignedSlot.slot.id}"]`,
+        );
+        if (!slotElement) continue;
+
+        const slotRect = slotElement.getBoundingClientRect();
+        const frame = {
+          x: (slotRect.left - previewRect.left) * pixelRatio,
+          y: (slotRect.top - previewRect.top) * pixelRatio,
+          width: slotRect.width * pixelRatio,
+          height: slotRect.height * pixelRatio,
+        };
+
+        const image = await loadCanvasImage(getProductImage(assignedSlot.product));
+        drawContainedImage(
+          context,
+          image,
+          frame,
+          pixelRatio,
+        );
+      }
+
+      const dataUrl = canvas.toDataURL("image/png");
+      const link = document.createElement("a");
+      link.download = `monis-product-preview-${Date.now()}.png`;
+      link.href = dataUrl;
+      link.click();
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   return (
     <section
+      ref={previewRef}
       aria-label="Workspace visual preview"
       className="relative min-h-135 overflow-visible rounded-[1.75rem] border border-white/70 bg-[#201b18] shadow-[0_18px_70px_rgba(77,55,35,0.14)] sm:min-h-160 sm:rounded-4xl"
     >
@@ -512,12 +661,33 @@ export function WorkspacePreview({
         <div aria-hidden="true" className="absolute inset-0 bg-linear-to-b from-black/5 via-transparent to-black/18" />
       </div>
 
-      <div className="relative z-50 flex items-center justify-between gap-3 p-4 sm:p-6">
+      <div
+        className="relative z-50 flex flex-wrap items-center justify-between gap-3 p-4 sm:p-6"
+        data-preview-control="true"
+      >
         <div className="rounded-full bg-white/86 px-4 py-2 text-sm font-black shadow-lg backdrop-blur">
           Live product setup preview
         </div>
-        <div className="rounded-full bg-[#201b18] px-4 py-2 text-sm font-bold text-white shadow-lg">
-          Delivered in Bali
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowPlaceholders((current) => !current)}
+            className="rounded-full bg-white/86 px-4 py-2 text-sm font-black text-[#201b18] shadow-lg transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f5b76b]"
+            aria-pressed={!showPlaceholders}
+          >
+            {showPlaceholders ? "Hide placeholders" : "Show placeholders"}
+          </button>
+          <button
+            type="button"
+            onClick={downloadPreview}
+            disabled={isDownloading}
+            className="rounded-full bg-[#201b18] px-4 py-2 text-sm font-bold text-white shadow-lg transition hover:-translate-y-0.5 disabled:cursor-wait disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f5b76b]"
+          >
+            {isDownloading ? "Preparing..." : "Download PNG"}
+          </button>
+          <div className="rounded-full bg-[#201b18] px-4 py-2 text-sm font-bold text-white shadow-lg">
+            Delivered in Bali
+          </div>
         </div>
       </div>
 
@@ -527,6 +697,7 @@ export function WorkspacePreview({
             key={assignedSlot.slot.id}
             assignedSlot={assignedSlot}
             isOpen={openSlotId === assignedSlot.slot.id}
+            showPlaceholder={showPlaceholders}
             options={getSlotOptions(assignedSlot.slot, products, selectedProductIds)}
             onOpen={() =>
               setOpenSlotId((current) =>
