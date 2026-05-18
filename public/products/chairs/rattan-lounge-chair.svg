@@ -1,0 +1,31 @@
+<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="rattanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#d99a5d;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8e552e;stop-opacity:1" />
+    </linearGradient>
+    <pattern id="rattanPattern" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1" fill="#c88a50" opacity="0.3"/>
+      <circle cx="6" cy="6" r="1" fill="#c88a50" opacity="0.3"/>
+    </pattern>
+  </defs>
+  <rect width="400" height="300" fill="#f5f5f5"/>
+  <g id="chair">
+    <!-- Curved backrest -->
+    <path d="M 140 80 Q 140 120 150 180 L 150 200" stroke="url(#rattanGrad)" stroke-width="40" fill="none" stroke-linecap="round"/>
+    <!-- Seat -->
+    <ellipse cx="200" cy="170" rx="60" ry="35" fill="url(#rattanGrad)"/>
+    <rect x="140" y="170" width="120" height="30" fill="url(#rattanGrad)" opacity="0.9"/>
+    <!-- Rattan texture overlay -->
+    <rect x="140" y="80" width="120" height="100" fill="url(#rattanPattern)"/>
+    <!-- Armrests -->
+    <path d="M 140 140 Q 130 160 140 190" stroke="#a86c3d" stroke-width="12" fill="none" stroke-linecap="round"/>
+    <path d="M 260 140 Q 270 160 260 190" stroke="#a86c3d" stroke-width="12" fill="none" stroke-linecap="round"/>
+    <!-- Cushion -->
+    <ellipse cx="200" cy="185" rx="55" ry="20" fill="#d99a5d" opacity="0.7"/>
+    <!-- Legs -->
+    <rect x="160" y="200" width="12" height="60" fill="#6b4423" rx="3"/>
+    <rect x="228" y="200" width="12" height="60" fill="#6b4423" rx="3"/>
+  </g>
+  <text x="200" y="280" font-family="Arial" font-size="14" text-anchor="middle" fill="#666">Rattan Lounge Chair</text>
+</svg>

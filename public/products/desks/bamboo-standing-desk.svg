@@ -1,0 +1,24 @@
+<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bambooGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#d78f43;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#bc6f2e;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="300" fill="#f5f5f5"/>
+  <g id="desk">
+    <!-- Desktop -->
+    <rect x="80" y="120" width="240" height="20" fill="url(#bambooGrad)" rx="2"/>
+    <!-- Adjustment mechanism -->
+    <rect x="90" y="140" width="8" height="80" fill="#888" rx="2"/>
+    <rect x="302" y="140" width="8" height="80" fill="#888" rx="2"/>
+    <!-- Legs -->
+    <rect x="85" y="220" width="12" height="50" fill="#333" rx="2"/>
+    <rect x="303" y="220" width="12" height="50" fill="#333" rx="2"/>
+    <!-- Height adjustment indicator -->
+    <circle cx="100" cy="150" r="4" fill="#f5b76b"/>
+    <circle cx="100" cy="170" r="3" fill="#e1a55d"/>
+    <circle cx="100" cy="190" r="3" fill="#d89551"/>
+  </g>
+  <text x="200" y="280" font-family="Arial" font-size="14" text-anchor="middle" fill="#666">Bamboo Standing Desk</text>
+</svg>

@@ -17,103 +17,78 @@ import { ProductSelection } from "@/components/product-selection";
 import { SummaryCheckout } from "@/components/summary-checkout";
 import { WorkspacePreview } from "@/components/workspace-preview";
 import {
-  accessories,
-  chairs,
   defaultConfiguratorSelections,
-  desks,
-  findAccessory,
-  findChair,
-  findDesk,
-  formatIdr,
+  findProduct,
+  formatCurrency,
+  products,
+  type CatalogProduct,
   type ConfiguratorState,
-  type SelectedAccessory,
+  type SelectedProduct,
 } from "@/data/products";
-import { calculateMonthlyTotal } from "@/lib/pricing";
+import {
+  calculateMonthlyTotal,
+  calculateWeeklyTotal,
+} from "@/lib/pricing";
 
-const STORAGE_KEY = "monis-rent-selected-workspace";
+const STORAGE_KEY = "monis-rent-selected-products";
 
 const setupPresets: Array<{
   name: string;
   description: string;
-  selectedDesk: string;
-  selectedChair: string;
-  selectedAccessories: SelectedAccessory[];
+  selectedProducts: SelectedProduct[];
 }> = [
   {
-    name: "Freelancer Setup",
-    description: "A polished solo desk for calls, content, and focused days.",
-    selectedDesk: "bamboo-standing-desk",
-    selectedChair: "ergo-cloud-chair",
-    selectedAccessories: [
-      { id: "creator-monitor", quantity: 1 },
-      { id: "sunset-task-lamp", quantity: 1 },
-      { id: "tropical-plant", quantity: 1 },
+    name: "Starter Monitor Kit",
+    description: "A simple setup for focused work and smooth delivery planning.",
+    selectedProducts: [
+      { id: "monitor-a24i-2026", quantity: 1 },
+      { id: "smart-power-strip-3", quantity: 1 },
     ],
   },
   {
-    name: "Startup Team Setup",
-    description: "More screen space, planning tools, coffee, and storage.",
-    selectedDesk: "founder-studio-desk",
-    selectedChair: "task-pro-chair",
-    selectedAccessories: [
-      { id: "creator-monitor", quantity: 2 },
-      { id: "coffee-machine", quantity: 1 },
-      { id: "open-shelf", quantity: 1 },
-      { id: "planning-board", quantity: 1 },
+    name: "Creative Studio Kit",
+    description: "A premium display stack with practical support gear.",
+    selectedProducts: [
+      { id: "apple-studio-display", quantity: 1 },
+      { id: "monitor-27-4k-multimedia", quantity: 1 },
     ],
   },
   {
-    name: "Focus Setup",
-    description: "Compact, calm, and easy to fit into a villa corner.",
-    selectedDesk: "compact-focus-desk",
-    selectedChair: "rattan-lounge-chair",
-    selectedAccessories: [
-      { id: "sunset-task-lamp", quantity: 1 },
-      { id: "tropical-plant", quantity: 1 },
+    name: "Compact Office Kit",
+    description: "A lighter bundle for a small room or temporary workspace.",
+    selectedProducts: [
+      { id: "monitor-a27i", quantity: 1 },
+      { id: "monitor-a24i", quantity: 1 },
     ],
   },
 ];
 
-function buildConfiguratorState(
-  selectedDesk: string | null,
-  selectedChair: string | null,
-  selectedAccessories: SelectedAccessory[],
-): ConfiguratorState {
+function buildConfiguratorState(selectedProducts: SelectedProduct[]): ConfiguratorState {
   return {
-    selectedDesk,
-    selectedChair,
-    selectedAccessories,
-    totalMonthlyPrice: calculateMonthlyTotal(
-      selectedDesk,
-      selectedChair,
-      selectedAccessories,
-    ),
+    selectedProducts,
+    totalWeeklyPrice: calculateWeeklyTotal(selectedProducts),
+    totalMonthlyPrice: calculateMonthlyTotal(selectedProducts),
   };
 }
 
-function normalizeAccessories(selectedAccessories: SelectedAccessory[]) {
-  return selectedAccessories
-    .map((selectedAccessory) => {
-      const accessory = accessories.find((item) => item.id === selectedAccessory.id);
-      if (!accessory) return null;
+function normalizeSelections(selectedProducts: SelectedProduct[]) {
+  return selectedProducts
+    .map((selectedProduct) => {
+      const product = findProduct(selectedProduct.id);
+      if (!product) return null;
 
-      const maxQuantity = accessory.maxQuantity ?? 1;
-      const quantity = Math.max(1, Math.min(selectedAccessory.quantity, maxQuantity));
-
-      return { id: accessory.id, quantity };
+      return {
+        id: product.id,
+        quantity: Math.max(1, selectedProduct.quantity || 1),
+      };
     })
-    .filter((item) => item !== null);
+    .filter((item): item is SelectedProduct => item !== null);
 }
 
 function stateFromSearchParams(searchParams: URLSearchParams) {
-  const selectedDesk = desks.some((desk) => desk.id === searchParams.get("desk"))
-    ? searchParams.get("desk")
-    : null;
-  const selectedChair = chairs.some((chair) => chair.id === searchParams.get("chair"))
-    ? searchParams.get("chair")
-    : null;
-  const selectedAccessories = normalizeAccessories(
-    (searchParams.get("accessories") ?? "")
+  const encodedSelections = searchParams.get("products") ?? searchParams.get("accessories") ?? "";
+  const selectedProducts = normalizeSelections(
+    encodedSelections
       .split(",")
       .filter(Boolean)
       .map((entry) => {
@@ -123,31 +98,30 @@ function stateFromSearchParams(searchParams: URLSearchParams) {
       }),
   );
 
-  if (!selectedDesk && !selectedChair && selectedAccessories.length === 0) return null;
-
-  return buildConfiguratorState(selectedDesk, selectedChair, selectedAccessories);
+  return selectedProducts.length > 0 ? buildConfiguratorState(selectedProducts) : null;
 }
 
 function stateFromStorageValue(value: string | null) {
   if (!value) return null;
 
   try {
-    const parsed = JSON.parse(value) as Partial<ConfiguratorState>;
-    const selectedDesk =
-      typeof parsed.selectedDesk === "string" &&
-      desks.some((desk) => desk.id === parsed.selectedDesk)
-        ? parsed.selectedDesk
-        : null;
-    const selectedChair =
-      typeof parsed.selectedChair === "string" &&
-      chairs.some((chair) => chair.id === parsed.selectedChair)
-        ? parsed.selectedChair
-        : null;
-    const selectedAccessories = normalizeAccessories(
-      Array.isArray(parsed.selectedAccessories) ? parsed.selectedAccessories : [],
+    const parsed = JSON.parse(value) as Partial<ConfiguratorState> & {
+      selectedDesk?: string | null;
+      selectedChair?: string | null;
+      selectedAccessories?: SelectedProduct[];
+    };
+
+    const selectedProducts = normalizeSelections(
+      Array.isArray(parsed.selectedProducts)
+        ? parsed.selectedProducts
+        : Array.isArray(parsed.selectedAccessories)
+          ? parsed.selectedAccessories
+          : [parsed.selectedDesk, parsed.selectedChair]
+              .filter((item): item is string => typeof item === "string")
+              .map((id) => ({ id, quantity: 1 })),
     );
 
-    return buildConfiguratorState(selectedDesk, selectedChair, selectedAccessories);
+    return selectedProducts.length > 0 ? buildConfiguratorState(selectedProducts) : null;
   } catch {
     return null;
   }
@@ -156,12 +130,10 @@ function stateFromStorageValue(value: string | null) {
 function setupSearchParams(state: ConfiguratorState) {
   const searchParams = new URLSearchParams();
 
-  if (state.selectedDesk) searchParams.set("desk", state.selectedDesk);
-  if (state.selectedChair) searchParams.set("chair", state.selectedChair);
-  if (state.selectedAccessories.length > 0) {
+  if (state.selectedProducts.length > 0) {
     searchParams.set(
-      "accessories",
-      state.selectedAccessories.map((item) => `${item.id}:${item.quantity}`).join(","),
+      "products",
+      state.selectedProducts.map((item) => `${item.id}:${item.quantity}`).join(","),
     );
   }
 
@@ -170,11 +142,7 @@ function setupSearchParams(state: ConfiguratorState) {
 
 export function ConfiguratorShell() {
   const [configuratorState, setConfiguratorState] = useState<ConfiguratorState>(() =>
-    buildConfiguratorState(
-      defaultConfiguratorSelections.selectedDesk,
-      defaultConfiguratorSelections.selectedChair,
-      defaultConfiguratorSelections.selectedAccessories,
-    ),
+    buildConfiguratorState(defaultConfiguratorSelections.selectedProducts),
   );
   const [hasLoadedSavedSetup, setHasLoadedSavedSetup] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
@@ -195,14 +163,7 @@ export function ConfiguratorShell() {
   useEffect(() => {
     if (!hasLoadedSavedSetup) return;
 
-    window.localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({
-        selectedDesk: configuratorState.selectedDesk,
-        selectedChair: configuratorState.selectedChair,
-        selectedAccessories: configuratorState.selectedAccessories,
-      }),
-    );
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ selectedProducts: configuratorState.selectedProducts }));
   }, [configuratorState, hasLoadedSavedSetup]);
 
   useEffect(() => {
@@ -213,105 +174,31 @@ export function ConfiguratorShell() {
     return () => window.clearTimeout(timeout);
   }, [toastMessage]);
 
-  const selectedDesk = useMemo(
-    () => findDesk(configuratorState.selectedDesk),
-    [configuratorState.selectedDesk],
-  );
-
-  const selectedChair = useMemo(
-    () => findChair(configuratorState.selectedChair),
-    [configuratorState.selectedChair],
-  );
-
-  const selectedAccessories = useMemo(
+  const selectedProducts = useMemo(
     () =>
-      configuratorState.selectedAccessories
-        .map((selectedAccessory) => {
-          const accessory = findAccessory(selectedAccessory.id);
+      configuratorState.selectedProducts
+        .map((selectedProduct) => {
+          const product = findProduct(selectedProduct.id);
 
-          return accessory ? { accessory, quantity: selectedAccessory.quantity } : null;
+          return product ? { product, quantity: selectedProduct.quantity } : null;
         })
-        .filter((item) => item !== null),
-    [configuratorState.selectedAccessories],
+        .filter((item): item is { product: CatalogProduct; quantity: number } => item !== null),
+    [configuratorState.selectedProducts],
   );
 
-  const updateSelections = (
-    updates: Partial<Omit<ConfiguratorState, "totalMonthlyPrice">>,
-  ) => {
+  const toggleProduct = (id: string) => {
     setConfiguratorState((current) => {
-      const next = {
-        selectedDesk: updates.selectedDesk ?? current.selectedDesk,
-        selectedChair: updates.selectedChair ?? current.selectedChair,
-        selectedAccessories: updates.selectedAccessories ?? current.selectedAccessories,
-      };
+      const isSelected = current.selectedProducts.some((item) => item.id === id);
+      const selectedProducts = isSelected
+        ? current.selectedProducts.filter((item) => item.id !== id)
+        : [...current.selectedProducts, { id, quantity: 1 }];
 
-      return {
-        ...next,
-        totalMonthlyPrice: calculateMonthlyTotal(
-          next.selectedDesk,
-          next.selectedChair,
-          next.selectedAccessories,
-        ),
-      };
-    });
-  };
-
-  const toggleAccessory = (id: string) => {
-    setConfiguratorState((current) => {
-      const isSelected = current.selectedAccessories.some((item) => item.id === id);
-      const selectedAccessories = isSelected
-        ? current.selectedAccessories.filter((item) => item.id !== id)
-        : [...current.selectedAccessories, { id, quantity: 1 }];
-
-      return {
-        ...current,
-        selectedAccessories,
-        totalMonthlyPrice: calculateMonthlyTotal(
-          current.selectedDesk,
-          current.selectedChair,
-          selectedAccessories,
-        ),
-      };
-    });
-  };
-
-  const updateAccessoryQuantity = (id: string, quantity: number) => {
-    const accessory = accessories.find((item) => item.id === id);
-    const maxQuantity = accessory?.maxQuantity ?? 1;
-    const safeQuantity = Math.max(0, Math.min(quantity, maxQuantity));
-
-    setConfiguratorState((current) => {
-      const hasAccessory = current.selectedAccessories.some((item) => item.id === id);
-      const selectedAccessories =
-        safeQuantity === 0
-          ? current.selectedAccessories.filter((item) => item.id !== id)
-          : hasAccessory
-            ? current.selectedAccessories.map((item) =>
-                item.id === id ? { ...item, quantity: safeQuantity } : item,
-              )
-            : [...current.selectedAccessories, { id, quantity: safeQuantity }];
-
-      return {
-        ...current,
-        selectedAccessories,
-        totalMonthlyPrice: calculateMonthlyTotal(
-          current.selectedDesk,
-          current.selectedChair,
-          selectedAccessories,
-        ),
-      };
+      return buildConfiguratorState(selectedProducts);
     });
   };
 
   const applyPreset = (preset: (typeof setupPresets)[number]) => {
-    setConfiguratorState(
-      buildConfiguratorState(
-        preset.selectedDesk,
-        preset.selectedChair,
-        preset.selectedAccessories,
-      ),
-    );
-
+    setConfiguratorState(buildConfiguratorState(normalizeSelections(preset.selectedProducts)));
     document.getElementById("preview")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
@@ -338,13 +225,10 @@ export function ConfiguratorShell() {
     }
   };
 
-  const selectedItemCount =
-    (configuratorState.selectedDesk ? 1 : 0) +
-    (configuratorState.selectedChair ? 1 : 0) +
-    configuratorState.selectedAccessories.reduce(
-      (total, selectedAccessory) => total + selectedAccessory.quantity,
-      0,
-    );
+  const selectedItemCount = configuratorState.selectedProducts.reduce(
+    (total, selectedProduct) => total + selectedProduct.quantity,
+    0,
+  );
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#f7f1e8] text-[#201b18]">
@@ -364,7 +248,7 @@ export function ConfiguratorShell() {
             </p>
             <a
               href="#checkout"
-              className="rounded-full bg-[#201b18] px-4 py-2 text-sm font-black text-white shadow-lg transition hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f06f61]"
+              className="rounded-full bg-[#201b18] px-4 py-2 text-sm font-black text-white shadow-lg transition hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-[#f06f61] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7f1e8]"
             >
               Rent request
             </a>
@@ -373,50 +257,48 @@ export function ConfiguratorShell() {
           <div className="grid flex-1 items-center gap-8 py-8 sm:gap-10 sm:py-10 lg:grid-cols-[minmax(0,0.95fr)_minmax(420px,1fr)]">
             <div className="relative z-10 max-w-3xl">
               <p className="mb-4 inline-flex rounded-full bg-white/65 px-4 py-2 text-sm font-black text-[#245b61] shadow-sm backdrop-blur">
-                Workspace rentals for Bali builders
+                Workspace rentals for modern teams
               </p>
               <h1 className="text-4xl font-black leading-[0.94] tracking-tight text-[#1d1a16] sm:text-7xl lg:text-8xl">
-                Design Your Bali Workspace
+                Design Your Product Stack
               </h1>
               <p className="mt-6 max-w-2xl text-lg font-medium leading-8 text-[#5f5148] sm:text-xl">
-                Rent desks, chairs, monitors, and workspace accessories without buying
-                furniture. Build a setup for your villa, studio, or startup space and request
-                delivery in Bali.
+                Pick from the live Monis Electronics catalog, compare weekly and monthly prices, and share a request that keeps missing fields from breaking the page.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <a
                   href="#configurator"
-                  className="inline-flex h-14 items-center justify-center gap-2 rounded-full bg-[#f06f61] px-7 text-sm font-black text-white shadow-xl shadow-[#f06f61]/25 transition hover:-translate-y-0.5 hover:bg-[#df5f52] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#201b18]"
+                  className="inline-flex h-14 items-center justify-center gap-2 rounded-full bg-[#f06f61] px-7 text-sm font-black text-white shadow-xl shadow-[#f06f61]/25 transition hover:-translate-y-0.5 hover:bg-[#df5f52] focus-visible:ring-2 focus-visible:ring-[#201b18] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7f1e8]"
                 >
                   Start Building
                   <ArrowDown className="size-4" />
                 </a>
                 <span className="text-sm font-bold text-[#6c5e53]">
-                  Flexible monthly rental, delivered in Bali.
+                  Weekly and monthly pricing pulled from JSON.
                 </span>
               </div>
             </div>
 
             <div
-              className="relative mx-auto min-h-[340px] w-full max-w-[620px] sm:min-h-[420px] lg:max-w-none"
+              className="relative mx-auto min-h-85 w-full max-w-155 sm:min-h-105 lg:max-w-none"
               aria-hidden="true"
             >
               <div className="absolute left-1/2 top-20 h-8 w-[72%] -translate-x-1/2 rounded-full bg-[#8d5836] shadow-2xl" />
               <div className="absolute left-[18%] top-28 h-32 w-4 rounded-full bg-[#70422d]" />
               <div className="absolute right-[18%] top-28 h-32 w-4 rounded-full bg-[#70422d]" />
-              <div className="absolute left-1/2 top-11 h-14 w-[78%] -translate-x-1/2 rounded-[1.6rem] bg-gradient-to-r from-[#d79248] via-[#e7ad66] to-[#c87836] shadow-[0_30px_80px_rgba(77,45,24,0.28)] ring-4 ring-white/45" />
-              <div className="absolute left-[36%] top-0 grid size-20 place-items-center rounded-[1.5rem] bg-gradient-to-br from-[#6c6b7d] to-[#252431] text-white shadow-2xl ring-4 ring-white/55">
+              <div className="absolute left-1/2 top-11 h-14 w-[78%] -translate-x-1/2 rounded-3xl bg-linear-to-r from-[#d79248] via-[#e7ad66] to-[#c87836] shadow-[0_30px_80px_rgba(77,45,24,0.28)] ring-4 ring-white/45" />
+              <div className="absolute left-[36%] top-0 grid size-20 place-items-center rounded-3xl bg-linear-to-br from-[#6c6b7d] to-[#252431] text-white shadow-2xl ring-4 ring-white/55">
                 <span className="h-8 w-11 rounded-md border-4 border-white/85" />
               </div>
-              <div className="absolute right-[22%] top-7 grid size-16 place-items-center rounded-[1.4rem] bg-gradient-to-br from-[#ffd36b] to-[#e1922f] text-white shadow-2xl ring-4 ring-white/55">
+              <div className="absolute right-[22%] top-7 grid size-16 place-items-center rounded-[1.4rem] bg-linear-to-br from-[#ffd36b] to-[#e1922f] text-white shadow-2xl ring-4 ring-white/55">
                 <span className="h-8 w-4 rounded-full bg-white/80" />
               </div>
-              <div className="absolute left-[18%] top-24 grid size-16 place-items-center rounded-[1.4rem] bg-gradient-to-br from-[#86c987] to-[#367a4c] text-white shadow-2xl ring-4 ring-white/55">
+              <div className="absolute left-[18%] top-24 grid size-16 place-items-center rounded-[1.4rem] bg-linear-to-br from-[#86c987] to-[#367a4c] text-white shadow-2xl ring-4 ring-white/55">
                 <span className="size-8 rounded-full bg-white/75" />
               </div>
               <div className="absolute bottom-12 left-1/2 flex -translate-x-1/2 flex-col items-center">
-                <div className="h-24 w-28 rounded-[2rem_2rem_1.4rem_1.4rem] bg-gradient-to-br from-[#76b5bd] to-[#2c6d79] shadow-[0_22px_60px_rgba(32,27,24,0.24)] ring-4 ring-white/50 sm:h-28 sm:w-32" />
-                <div className="-mt-4 h-16 w-24 rounded-[1.7rem] bg-gradient-to-br from-[#76b5bd] to-[#2c6d79] shadow-lg" />
+                <div className="h-24 w-28 rounded-[2rem_2rem_1.4rem_1.4rem] bg-linear-to-br from-[#76b5bd] to-[#2c6d79] shadow-[0_22px_60px_rgba(32,27,24,0.24)] ring-4 ring-white/50 sm:h-28 sm:w-32" />
+                <div className="-mt-4 h-16 w-24 rounded-3xl bg-linear-to-br from-[#76b5bd] to-[#2c6d79] shadow-lg" />
                 <div className="h-12 w-3 bg-[#244f57]" />
                 <div className="h-3 w-28 rounded-full bg-[#244f57]" />
               </div>
@@ -430,8 +312,8 @@ export function ConfiguratorShell() {
         <div className="mx-auto max-w-7xl">
           <SectionIntro
             eyebrow="Interactive configurator"
-            title="Choose the pieces that match how you work."
-            copy="Start with the furniture, then layer in practical comforts like monitors, lighting, storage, plants, and coffee."
+            title="Choose the products that match how you work."
+            copy="The list now comes directly from the Monis Electronics JSON feed, so product names, images, descriptions, specs, and prices stay aligned with the source data."
           />
           <div className="mt-6 rounded-[1.75rem] border border-white/70 bg-white/65 p-4 shadow-[0_18px_70px_rgba(77,55,35,0.1)] backdrop-blur sm:p-5">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
@@ -453,7 +335,7 @@ export function ConfiguratorShell() {
                   type="button"
                   onClick={() => applyPreset(preset)}
                   aria-label={`Apply ${preset.name}`}
-                  className="group rounded-[1.35rem] border border-[#eadfce] bg-white/82 p-4 text-left shadow-sm transition duration-200 hover:-translate-y-1 hover:border-[#d78f43] hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f06f61]"
+                  className="group rounded-[1.35rem] border border-[#eadfce] bg-white/82 p-4 text-left shadow-sm transition duration-200 hover:-translate-y-1 hover:border-[#d78f43] hover:shadow-xl focus-visible:ring-2 focus-visible:ring-[#f06f61] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7f1e8]"
                 >
                   <span className="flex items-center justify-between gap-3">
                     <span className="grid size-10 place-items-center rounded-2xl bg-[#f6ecdf] text-sm font-black text-[#b45f32]">
@@ -483,8 +365,8 @@ export function ConfiguratorShell() {
               <button
                 type="button"
                 onClick={copySetupLink}
-                aria-label="Copy selected workspace setup link"
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-[#201b18] px-4 text-sm font-black text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-[#3a302a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f06f61]"
+                aria-label="Copy selected product setup link"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-[#201b18] px-4 text-sm font-black text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-[#3a302a] focus-visible:ring-2 focus-visible:ring-[#f06f61] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7f1e8]"
               >
                 <Copy className="size-4" />
                 Copy Setup Link
@@ -494,14 +376,9 @@ export function ConfiguratorShell() {
           <div className="mt-6">
             <ProductSelection
               state={configuratorState}
-              desks={desks}
-              chairs={chairs}
-              accessories={accessories}
+              products={products}
               selectedItemCount={selectedItemCount}
-              onSelectDesk={(selectedDesk) => updateSelections({ selectedDesk })}
-              onSelectChair={(selectedChair) => updateSelections({ selectedChair })}
-              onToggleAccessory={toggleAccessory}
-              onUpdateAccessoryQuantity={updateAccessoryQuantity}
+              onToggleProduct={toggleProduct}
             />
           </div>
         </div>
@@ -511,29 +388,29 @@ export function ConfiguratorShell() {
         <div className="mx-auto max-w-7xl">
           <SectionIntro
             eyebrow="Workspace preview"
-            title="Watch your rental setup come together."
-            copy="The preview updates as you choose furniture and accessories, so the workspace feels designed before it is delivered."
+            title="Watch your product request come together."
+            copy="The preview updates as you choose products, so the request feels designed before it is sent."
           />
           <div className="mt-6">
-            <WorkspacePreview
-              selectedDesk={selectedDesk}
-              selectedChair={selectedChair}
-              selectedAccessories={selectedAccessories}
-            />
+            <WorkspacePreview selectedProducts={selectedProducts} />
           </div>
         </div>
       </section>
 
       <section id="checkout" className="px-4 py-10 sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[minmax(0,0.8fr)_minmax(360px,520px)] lg:items-start">
-          <div className="rounded-[2rem] bg-white/60 p-5 shadow-[0_18px_70px_rgba(77,55,35,0.1)] backdrop-blur">
+          <div className="rounded-4xl bg-white/60 p-5 shadow-[0_18px_70px_rgba(77,55,35,0.1)] backdrop-blur">
             <SectionIntro
               eyebrow="Rent request"
-              title="Confirm the setup, then send the request."
-              copy="No complicated checkout. Share your contact, rental duration, and preferred delivery date so the monis.rent team can prepare the next step."
+              title="Confirm the products, then send the request."
+              copy="No complicated checkout. Share your contact, rental duration, and preferred delivery date so the Monis team can prepare the next step."
             />
             <div className="mt-6 grid gap-3 sm:grid-cols-3">
-              {["Pick gear", "Preview setup", "Request rental"].map((step, index) => (
+              {[
+                "Pick products",
+                "Preview request",
+                "Send inquiry",
+              ].map((step, index) => (
                 <div key={step} className="rounded-3xl bg-[#201b18] p-4 text-white shadow-lg shadow-[#201b18]/10">
                   <span className="grid size-8 place-items-center rounded-full bg-[#f5b76b] text-sm font-black text-[#201b18]">
                     {index + 1}
@@ -545,9 +422,7 @@ export function ConfiguratorShell() {
           </div>
           <SummaryCheckout
             state={configuratorState}
-            selectedDesk={selectedDesk}
-            selectedChair={selectedChair}
-            selectedAccessories={selectedAccessories}
+            selectedProducts={selectedProducts}
           />
         </div>
       </section>
@@ -557,13 +432,13 @@ export function ConfiguratorShell() {
           <SectionIntro
             eyebrow="Why rent"
             title="Built for temporary homes, focused sprints, and fast-moving teams."
-            copy="A cleaner way to set up a productive Bali workspace without buying, storing, or moving office equipment."
+            copy="A cleaner way to set up a productive workspace without buying, storing, or moving equipment."
           />
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <BenefitCard
               icon={<CalendarDays className="size-5" />}
-              title="Flexible monthly rental"
-              copy="Scale the setup up or down as your stay or team changes."
+              title="Flexible weekly or monthly pricing"
+              copy="Compare the live scraped prices and keep the request transparent."
             />
             <BenefitCard
               icon={<MapPin className="size-5" />}
@@ -578,7 +453,7 @@ export function ConfiguratorShell() {
             <BenefitCard
               icon={<PackageCheck className="size-5" />}
               title="No need to buy equipment"
-              copy="Avoid one-off purchases, storage problems, and furniture resale."
+              copy="Avoid one-off purchases, storage problems, and resale friction."
             />
           </div>
         </div>
@@ -587,13 +462,14 @@ export function ConfiguratorShell() {
       <FloatingSummary
         selectedItemCount={selectedItemCount}
         totalMonthlyPrice={configuratorState.totalMonthlyPrice}
+        totalWeeklyPrice={configuratorState.totalWeeklyPrice}
         onCopySetupLink={copySetupLink}
       />
       {toastMessage ? (
         <div
           role="status"
           aria-live="polite"
-          className="fixed bottom-5 left-1/2 z-[60] -translate-x-1/2 rounded-full bg-[#201b18] px-5 py-3 text-sm font-black text-white shadow-2xl"
+          className="fixed bottom-5 left-1/2 z-60 -translate-x-1/2 rounded-full bg-[#201b18] px-5 py-3 text-sm font-black text-white shadow-2xl"
         >
           {toastMessage}
         </div>
@@ -629,10 +505,12 @@ function SectionIntro({
 function FloatingSummary({
   selectedItemCount,
   totalMonthlyPrice,
+  totalWeeklyPrice,
   onCopySetupLink,
 }: {
   selectedItemCount: number;
-  totalMonthlyPrice: number;
+  totalMonthlyPrice: number | null;
+  totalWeeklyPrice: number | null;
   onCopySetupLink: () => void;
 }) {
   if (selectedItemCount === 0) return null;
@@ -640,7 +518,7 @@ function FloatingSummary({
   return (
     <aside
       aria-label="Floating workspace summary"
-      className="fixed bottom-5 right-5 z-50 hidden w-72 rounded-[1.5rem] border border-white/70 bg-white/86 p-4 text-[#201b18] shadow-[0_18px_70px_rgba(32,27,24,0.22)] backdrop-blur-xl xl:block"
+      className="fixed bottom-5 right-5 z-50 hidden w-72 rounded-3xl border border-white/70 bg-white/86 p-4 text-[#201b18] shadow-[0_18px_70px_rgba(32,27,24,0.22)] backdrop-blur-xl xl:block"
     >
       <div className="flex items-center gap-3">
         <div className="grid size-11 place-items-center rounded-2xl bg-[#201b18] text-[#f5b76b]">
@@ -657,13 +535,19 @@ function FloatingSummary({
       </div>
       <div className="mt-4 flex items-end justify-between gap-3 border-t border-[#eadfce] pt-4">
         <span className="text-sm font-black">Monthly</span>
-        <span key={totalMonthlyPrice} className="price-pop text-xl font-black">
-          {formatIdr(totalMonthlyPrice)}
+        <span className="price-pop text-sm font-black">
+          {totalMonthlyPrice === null ? "Check availability" : formatCurrency(totalMonthlyPrice)}
+        </span>
+      </div>
+      <div className="mt-3 flex items-end justify-between gap-3 border-t border-[#eadfce] pt-3">
+        <span className="text-sm font-black">Weekly</span>
+        <span className="price-pop text-sm font-black">
+          {totalWeeklyPrice === null ? "Price on request" : formatCurrency(totalWeeklyPrice)}
         </span>
       </div>
       <a
         href="#checkout"
-        className="mt-4 flex h-11 items-center justify-center gap-2 rounded-2xl bg-[#f06f61] text-sm font-black text-white shadow-lg shadow-[#f06f61]/25 transition hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#201b18]"
+        className="mt-4 flex h-11 items-center justify-center gap-2 rounded-2xl bg-[#f06f61] text-sm font-black text-white shadow-lg shadow-[#f06f61]/25 transition hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-[#201b18] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7f1e8]"
       >
         Review request
         <Check className="size-4" />
@@ -671,8 +555,8 @@ function FloatingSummary({
       <button
         type="button"
         onClick={onCopySetupLink}
-        aria-label="Copy selected workspace setup link"
-        className="mt-2 flex h-10 w-full items-center justify-center gap-2 rounded-2xl bg-[#201b18] text-xs font-black text-white transition hover:-translate-y-0.5 hover:bg-[#3a302a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f06f61]"
+        aria-label="Copy selected product setup link"
+        className="mt-2 flex h-10 w-full items-center justify-center gap-2 rounded-2xl bg-[#201b18] text-xs font-black text-white transition hover:-translate-y-0.5 hover:bg-[#3a302a] focus-visible:ring-2 focus-visible:ring-[#f06f61] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7f1e8]"
       >
         <Copy className="size-3.5" />
         Copy Setup Link

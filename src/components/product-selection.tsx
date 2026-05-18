@@ -1,242 +1,171 @@
-import { Check, Minus, Plus } from "lucide-react";
+"use client";
+
+import { useMemo, useState } from "react";
+import Image from "next/image";
 import {
-  formatIdr,
-  type Accessory,
-  type Chair,
+  catalogSections,
+  formatCategoryLabel,
+  formatPrice,
+  getMonthlyPrice,
+  getProductImage,
+  getWeeklyPrice,
+  groupProductsBySection,
+  type CatalogProduct,
+  type CatalogSectionKey,
   type ConfiguratorState,
-  type Desk,
 } from "@/data/products";
 
 type ProductSelectionProps = {
   state: ConfiguratorState;
-  desks: Desk[];
-  chairs: Chair[];
-  accessories: Accessory[];
+  products: CatalogProduct[];
   selectedItemCount: number;
-  onSelectDesk: (id: string) => void;
-  onSelectChair: (id: string) => void;
-  onToggleAccessory: (id: string) => void;
-  onUpdateAccessoryQuantity: (id: string, quantity: number) => void;
+  onToggleProduct: (id: string) => void;
 };
 
-type AccessoryCardProps = {
-  accessory: Accessory;
-  quantity: number;
-  onToggle: () => void;
-  onDecrease: () => void;
-  onIncrease: () => void;
+type PriceLineProps = {
+  label: string;
+  value: string;
+  note?: string;
 };
 
-type FurnitureCardProps = {
-  item: Desk | Chair;
-  isSelected: boolean;
-  onClick: () => void;
-};
-
-function FurnitureSilhouette({ item, isSelected }: { item: Desk | Chair; isSelected: boolean }) {
-  const Icon = item.visual.icon;
-
-  if (item.category === "desk") {
-    return (
-      <div className="relative h-24 overflow-hidden rounded-3xl bg-[#fff7e9]">
-        <div className={`absolute inset-x-5 top-10 h-5 rounded-full bg-gradient-to-r ${item.visual.accent} shadow-lg`} />
-        <div className={`absolute left-10 top-14 h-14 w-2 rounded-full ${item.visual.color}`} />
-        <div className={`absolute right-10 top-14 h-14 w-2 rounded-full ${item.visual.color}`} />
-        <div className="absolute left-7 top-7 h-2 w-16 rounded-full bg-white/70" />
-        <div className="absolute right-7 top-7 h-2 w-9 rounded-full bg-white/70" />
-        <div
-          className={`absolute right-4 top-4 grid size-9 place-items-center rounded-2xl ${
-            isSelected ? "bg-[#201b18] text-[#f5b76b]" : "bg-white text-[#8b6c4d]"
-          } shadow-md`}
-        >
-          <Icon className="size-4" />
-        </div>
-      </div>
-    );
-  }
-
+function PriceLine({ label, value, note }: PriceLineProps) {
   return (
-    <div className="relative h-24 overflow-hidden rounded-3xl bg-[#fff7e9]">
-      <div className={`absolute left-1/2 top-5 h-14 w-20 -translate-x-1/2 rounded-[1.6rem_1.6rem_1rem_1rem] bg-gradient-to-br ${item.visual.accent} shadow-lg`} />
-      <div className={`absolute left-1/2 top-14 h-10 w-24 -translate-x-1/2 rounded-[1.4rem] bg-gradient-to-br ${item.visual.accent} shadow-md`} />
-      <div className={`absolute left-1/2 top-[5.35rem] h-8 w-2 -translate-x-1/2 ${item.visual.color}`} />
-      <div className={`absolute bottom-2 left-1/2 h-2 w-24 -translate-x-1/2 rounded-full ${item.visual.color}`} />
-      <div
-        className={`absolute right-4 top-4 grid size-9 place-items-center rounded-2xl ${
-          isSelected ? "bg-[#201b18] text-[#f5b76b]" : "bg-white text-[#8b6c4d]"
-        } shadow-md`}
-      >
-        <Icon className="size-4" />
-      </div>
+    <div className="flex items-start justify-between gap-3">
+      <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#7b6b5e]">
+        {label}
+      </span>
+      <span className="text-right text-sm font-black text-[#201b18]">
+        <span className="block">{value}</span>
+        {note ? <span className="mt-0.5 block text-[11px] font-bold text-[#b45f32]">{note}</span> : null}
+      </span>
     </div>
   );
 }
 
-function FurnitureCard({ item, isSelected, onClick }: FurnitureCardProps) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={isSelected}
-      className={`group rounded-[1.6rem] border p-2 text-left transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f06f61] ${
-        isSelected
-          ? "border-[#201b18] bg-[#201b18] text-white shadow-xl shadow-[#201b18]/15 ring-2 ring-[#f5b76b]/45"
-          : "border-[#eadfce] bg-white/82 hover:-translate-y-0.5 hover:border-[#d78f43] hover:shadow-lg"
-      }`}
-    >
-      <div aria-hidden="true">
-        <FurnitureSilhouette item={item} isSelected={isSelected} />
-      </div>
-      <div className="px-2 pb-2 pt-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h4 className="text-sm font-black leading-5">{item.name}</h4>
-            {item.tag ? (
-              <span
-                className={`mt-2 inline-flex rounded-full px-2 py-0.5 text-[10px] font-black uppercase ${
-                  isSelected ? "bg-white/14 text-[#f5b76b]" : "bg-[#e2f2ef] text-[#245b61]"
-                }`}
-              >
-                {item.tag}
-              </span>
-            ) : null}
-            {isSelected ? (
-              <span className="mt-2 ml-1 inline-flex rounded-full bg-[#f5b76b] px-2 py-0.5 text-[10px] font-black uppercase text-[#201b18]">
-                Selected
-              </span>
-            ) : null}
-          </div>
-          <span
-            className={`grid size-8 shrink-0 place-items-center rounded-full ${
-              isSelected ? "bg-[#f5b76b] text-[#201b18]" : "bg-[#f6ecdf] text-[#8b6c4d]"
-            }`}
-            aria-hidden="true"
-          >
-            {isSelected ? <Check className="size-4" /> : <Plus className="size-4" />}
-          </span>
-        </div>
-        <p className={`mt-3 line-clamp-2 min-h-10 text-xs leading-5 ${isSelected ? "text-white/68" : "text-[#6c5e53]"}`}>
-          {item.description}
-        </p>
-        <p className={`mt-3 text-sm font-black ${isSelected ? "text-[#f5b76b]" : "text-[#b45f32]"}`}>
-          {formatIdr(item.pricePerMonth)}/mo
-        </p>
-      </div>
-    </button>
-  );
-}
-
-function accessoryActionLabel(accessory: Accessory) {
-  if (accessory.id.includes("monitor")) return "Add Monitor";
-  if (accessory.id.includes("lamp")) return "Add Lamp";
-  if (accessory.id.includes("plant")) return "Add Plant";
-  if (accessory.id.includes("coffee")) return "Add Coffee";
-  if (accessory.id.includes("shelf")) return "Add Shelf";
-
-  return "Add Board";
-}
-
-function AccessoryCard({
-  accessory,
-  quantity,
-  onToggle,
-  onDecrease,
-  onIncrease,
-}: AccessoryCardProps) {
-  const Icon = accessory.visual.icon;
-  const isSelected = quantity > 0;
-  const canAdjustQuantity = accessory.quantityAdjustable;
-  const maxQuantity = accessory.maxQuantity ?? 1;
+function ProductCard({
+  product,
+  isSelected,
+  onClick,
+}: {
+  product: CatalogProduct;
+  isSelected: boolean;
+  onClick: () => void;
+}) {
+  const weeklyPrice = getWeeklyPrice(product);
+  const monthlyPrice = getMonthlyPrice(product);
+  const weeklyNote = product.priceWeekly === null && weeklyPrice !== null ? "Estimated" : undefined;
+  const monthlyNote = product.priceMonthly === null && monthlyPrice !== null ? "Estimated" : undefined;
+  const bothUnavailable = weeklyPrice === null && monthlyPrice === null;
+  const priceStatus = bothUnavailable ? product.priceStatus || "Price on request" : undefined;
 
   return (
     <article
-      className={`group rounded-[1.6rem] border p-3 transition duration-200 ${
+      className={`group overflow-hidden rounded-[1.6rem] border transition duration-200 ${
         isSelected
-          ? "accessory-added border-[#201b18] bg-[#201b18] text-white shadow-xl shadow-[#201b18]/15 ring-2 ring-[#f5b76b]/45"
-          : "border-[#eadfce] bg-white/82 hover:-translate-y-0.5 hover:border-[#d78f43] hover:shadow-lg"
+          ? "border-[#201b18] bg-[#201b18] text-white shadow-xl shadow-[#201b18]/15 ring-2 ring-[#f5b76b]/45"
+          : "border-[#eadfce] bg-white/84 hover:-translate-y-0.5 hover:border-[#d78f43] hover:shadow-lg"
       }`}
     >
-      <div className="flex items-start gap-3">
-        <div
-          className={`relative grid size-14 shrink-0 place-items-center rounded-2xl bg-gradient-to-br ${accessory.visual.accent} shadow-md`}
-          aria-hidden="true"
-        >
-          <Icon className="size-6 text-white" />
+      <div className="p-3">
+        <div className="relative overflow-hidden rounded-[1.35rem] bg-[#fff7e9]">
+          <div className="relative aspect-4/3 w-full">
+            <Image
+              src={getProductImage(product)}
+              alt={product.name}
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              className="object-contain p-4 transition duration-300 group-hover:scale-[1.02]"
+            />
+          </div>
+          <div className="absolute left-3 top-3 rounded-full bg-[#201b18]/88 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-[#f5b76b]">
+            {formatCategoryLabel(product.category)}
+          </div>
           {isSelected ? (
-            <span className="absolute -right-1 -top-1 grid size-5 place-items-center rounded-full bg-[#f5b76b] text-[#201b18]">
-              <Check className="size-3" />
-            </span>
+            <div className="absolute right-3 top-3 rounded-full bg-[#f5b76b] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-[#201b18]">
+              Selected
+            </div>
           ) : null}
         </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <h4 className="text-sm font-black leading-5">{accessory.name}</h4>
-            {accessory.tag ? (
-              <span
-                className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase ${
-                  isSelected ? "bg-white/14 text-[#f5b76b]" : "bg-[#e2f2ef] text-[#245b61]"
-                }`}
-              >
-                {accessory.tag}
-              </span>
+
+        <div className="px-1 pb-1 pt-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <h4 className={`text-sm font-black leading-5 ${isSelected ? "text-white" : "text-[#201b18]"}`}>
+                {product.name}
+              </h4>
+              {product.savingsLabel ? (
+                <span className={`mt-2 inline-flex rounded-full px-2 py-0.5 text-[10px] font-black uppercase ${isSelected ? "bg-white/14 text-[#f5b76b]" : "bg-[#e2f2ef] text-[#245b61]"}`}>
+                  {product.savingsLabel}
+                </span>
+              ) : null}
+            </div>
+            <button
+              type="button"
+              onClick={onClick}
+              className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-black transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
+                isSelected
+                  ? "bg-[#f5b76b] text-[#201b18] focus-visible:ring-[#f5b76b] focus-visible:ring-offset-[#201b18]"
+                  : "bg-[#201b18] text-white hover:bg-[#3a302a] focus-visible:ring-[#201b18] focus-visible:ring-offset-[#fffaf0]"
+              }`}
+              aria-pressed={isSelected}
+            >
+              {isSelected ? "Added" : "Add"}
+            </button>
+          </div>
+
+          <p className={`mt-3 line-clamp-3 min-h-12 text-xs leading-5 ${isSelected ? "text-white/70" : "text-[#6c5e53]"}`}>
+            {product.shortDescription || "Details coming soon."}
+          </p>
+
+          <div className={`mt-3 space-y-2 rounded-2xl border px-3 py-3 text-xs ${isSelected ? "border-white/10 bg-white/8" : "border-[#eadfce] bg-[#fffaf0]"}`}>
+            {bothUnavailable ? (
+              <div className="rounded-xl bg-[#f6ecdf] px-3 py-2 text-xs font-black text-[#b45f32]">
+                Price on request
+              </div>
             ) : null}
-            {isSelected ? (
-              <span className="rounded-full bg-[#f5b76b] px-2 py-0.5 text-[10px] font-black uppercase text-[#201b18]">
-                Selected
-              </span>
+            <PriceLine
+              label="Weekly"
+              value={formatPrice(weeklyPrice, product.priceCurrency, "Price on request")}
+              note={weeklyNote}
+            />
+            <PriceLine
+              label="Monthly"
+              value={formatPrice(monthlyPrice, product.priceCurrency, "Check availability")}
+              note={monthlyNote}
+            />
+          </div>
+
+          <div className={`mt-3 rounded-2xl border px-3 py-2 ${isSelected ? "border-white/10 bg-white/8" : "border-[#eadfce] bg-white/70"}`}>
+            <p className={`text-[10px] font-black uppercase tracking-[0.14em] ${isSelected ? "text-[#f5b76b]" : "text-[#8b6c4d]"}`}>
+              Specs
+            </p>
+            {Object.entries(product.specs ?? {})
+              .slice(0, 2)
+              .map(([key, value]) => (
+                <div key={key} className="mt-1 flex items-start justify-between gap-3 text-[11px] leading-5">
+                  <span className={isSelected ? "text-white/55" : "text-[#7b6b5e]"}>{key}</span>
+                  <span className={`text-right font-semibold ${isSelected ? "text-white" : "text-[#3b2f27]"}`}>
+                    {typeof value === "string" || typeof value === "number" ? String(value) : "Available"}
+                  </span>
+                </div>
+              ))}
+            {!product.specs || Object.keys(product.specs).length === 0 ? (
+              <p className={`mt-1 text-xs leading-5 ${isSelected ? "text-white/70" : "text-[#6c5e53]"}`}>
+                Specs unavailable.
+              </p>
             ) : null}
           </div>
-          <p className={`mt-1 line-clamp-2 text-xs leading-5 ${isSelected ? "text-white/68" : "text-[#6c5e53]"}`}>
-            {accessory.description}
-          </p>
-          <p className={`mt-2 text-xs font-black ${isSelected ? "text-[#f5b76b]" : "text-[#b45f32]"}`}>
-            {formatIdr(accessory.pricePerMonth)}/mo
-          </p>
+
+          {priceStatus ? (
+            <p className={`mt-3 text-[11px] leading-5 ${isSelected ? "text-white/60" : "text-[#7b6b5e]"}`}>
+              {priceStatus}
+            </p>
+          ) : (
+            <p className={`mt-3 text-[11px] leading-5 ${isSelected ? "text-white/60" : "text-[#7b6b5e]"}`}>
+              Estimated monthly pricing uses the live weekly or monthly rental data.
+            </p>
+          )}
         </div>
-      </div>
-
-      <div className="mt-3 flex items-center justify-between gap-2">
-        {canAdjustQuantity && isSelected ? (
-          <div className="flex items-center gap-1 rounded-full bg-white/12 p-1">
-            <button
-              type="button"
-              aria-label={`Decrease ${accessory.name}`}
-              onClick={onDecrease}
-              className="grid size-9 place-items-center rounded-full bg-white/12 text-white transition hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f5b76b]"
-            >
-              <Minus className="size-4" />
-            </button>
-            <span className="w-16 text-center text-xs font-black" aria-live="polite">
-              {quantity}/{maxQuantity}
-            </span>
-            <button
-              type="button"
-              aria-label={`Increase ${accessory.name}`}
-              onClick={onIncrease}
-              disabled={quantity >= maxQuantity}
-              className="grid size-9 place-items-center rounded-full bg-[#f5b76b] text-[#201b18] transition hover:bg-[#ffd07a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-not-allowed disabled:opacity-45"
-            >
-              <Plus className="size-4" />
-            </button>
-          </div>
-        ) : (
-          <span className={`text-xs font-bold ${isSelected ? "text-white/55" : "text-[#7b6b5e]"}`}>
-            {isSelected ? "Added to scene" : "Customize the setup"}
-          </span>
-        )}
-
-        <button
-          type="button"
-          onClick={onToggle}
-          aria-pressed={isSelected}
-          className={`h-11 shrink-0 rounded-full px-4 text-xs font-black transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
-            isSelected
-              ? "bg-white/12 text-white hover:bg-white/20 focus-visible:outline-[#f5b76b]"
-              : "bg-[#201b18] text-white hover:-translate-y-0.5 hover:bg-[#3a302a] focus-visible:outline-[#f06f61]"
-          }`}
-        >
-          {isSelected ? "Remove" : accessoryActionLabel(accessory)}
-        </button>
       </div>
     </article>
   );
@@ -244,107 +173,105 @@ function AccessoryCard({
 
 export function ProductSelection({
   state,
-  desks,
-  chairs,
-  accessories,
+  products,
   selectedItemCount,
-  onSelectDesk,
-  onSelectChair,
-  onToggleAccessory,
-  onUpdateAccessoryQuantity,
+  onToggleProduct,
 }: ProductSelectionProps) {
-  const getAccessoryQuantity = (id: string) =>
-    state.selectedAccessories.find((item) => item.id === id)?.quantity ?? 0;
+  const groupedSections = useMemo(() => groupProductsBySection(products), [products]);
+  const [activeFilter, setActiveFilter] = useState<"all" | CatalogSectionKey>("all");
+
+  const visibleSections = groupedSections.filter(
+    (section) => activeFilter === "all" || section.key === activeFilter,
+  );
 
   return (
     <section
       aria-labelledby="product-selection-title"
-      className="rounded-[1.75rem] border border-white/70 bg-white/72 p-4 shadow-[0_18px_70px_rgba(77,55,35,0.12)] backdrop-blur sm:rounded-[2rem] sm:p-5 lg:p-6"
+      className="rounded-[1.75rem] border border-white/70 bg-white/72 p-4 shadow-[0_18px_70px_rgba(77,55,35,0.12)] backdrop-blur sm:rounded-4xl sm:p-5 lg:p-6"
     >
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#b45f32]">Gear</p>
+          <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#b45f32]">Catalog</p>
           <h2 id="product-selection-title" className="mt-1 text-2xl font-black tracking-tight">
-            Pick the pieces
+            Browse the rental catalog
           </h2>
         </div>
         <span className="rounded-full bg-[#e2f2ef] px-3 py-1 text-sm font-bold text-[#245b61]">
-          {selectedItemCount} items
+          {selectedItemCount} selected
         </span>
       </div>
 
+      <div className="mb-5 flex flex-wrap gap-2">
+        <FilterTab label="All" active={activeFilter === "all"} onClick={() => setActiveFilter("all")} />
+        {catalogSections.map((section) => {
+          const count = products.filter((product) => product.section === section.key).length;
+
+          if (count === 0) return null;
+
+          return (
+            <FilterTab
+              key={section.key}
+              label={`${section.label} (${count})`}
+              active={activeFilter === section.key}
+              onClick={() => setActiveFilter(section.key)}
+            />
+          );
+        })}
+      </div>
+
       <div className="space-y-6">
-        <section>
-          <div className="mb-3 flex items-end justify-between gap-3">
-            <div>
-              <h3 className="text-xs font-black uppercase tracking-[0.16em] text-[#78695d]">
-                Desk
-              </h3>
-              <p className="mt-1 text-xs leading-5 text-[#7b6b5e]">Choose the anchor of the setup.</p>
+        {visibleSections.map((section) => (
+          <section key={section.key}>
+            <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h3 className="text-xs font-black uppercase tracking-[0.16em] text-[#78695d]">
+                  {section.label}
+                </h3>
+                <p className="mt-1 text-xs leading-5 text-[#7b6b5e]">{section.description}</p>
+              </div>
             </div>
-          </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {desks.map((desk) => (
-              <FurnitureCard
-                key={desk.id}
-                item={desk}
-                isSelected={state.selectedDesk === desk.id}
-                onClick={() => onSelectDesk(desk.id)}
-              />
-            ))}
-          </div>
-        </section>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {section.products.map((product) => {
+                const isSelected = state.selectedProducts.some((selectedProduct) => selectedProduct.id === product.id);
 
-        <section>
-          <div className="mb-3 flex items-end justify-between gap-3">
-            <div>
-              <h3 className="text-xs font-black uppercase tracking-[0.16em] text-[#78695d]">
-                Chair
-              </h3>
-              <p className="mt-1 text-xs leading-5 text-[#7b6b5e]">Set the comfort and posture style.</p>
+                return (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    isSelected={isSelected}
+                    onClick={() => onToggleProduct(product.id)}
+                  />
+                );
+              })}
             </div>
-          </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {chairs.map((chair) => (
-              <FurnitureCard
-                key={chair.id}
-                item={chair}
-                isSelected={state.selectedChair === chair.id}
-                onClick={() => onSelectChair(chair.id)}
-              />
-            ))}
-          </div>
-        </section>
-
-        <section>
-          <div className="mb-3 flex items-end justify-between gap-3">
-            <div>
-              <h3 className="text-xs font-black uppercase tracking-[0.16em] text-[#78695d]">
-                Accessories
-              </h3>
-              <p className="mt-1 text-xs leading-5 text-[#7b6b5e]">
-                Add personality and utility to the scene.
-              </p>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {accessories.map((accessory) => {
-              const quantity = getAccessoryQuantity(accessory.id);
-
-              return (
-                <AccessoryCard
-                  key={accessory.id}
-                  accessory={accessory}
-                  quantity={quantity}
-                  onToggle={() => onToggleAccessory(accessory.id)}
-                  onDecrease={() => onUpdateAccessoryQuantity(accessory.id, quantity - 1)}
-                  onIncrease={() => onUpdateAccessoryQuantity(accessory.id, quantity + 1)}
-                />
-              );
-            })}
-          </div>
-        </section>
+          </section>
+        ))}
       </div>
     </section>
+  );
+}
+
+function FilterTab({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-full px-4 py-2 text-sm font-black transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
+        active
+          ? "bg-[#201b18] text-white focus-visible:ring-[#201b18] focus-visible:ring-offset-[#f7f1e8]"
+          : "bg-[#f6ecdf] text-[#6c5e53] hover:bg-[#eadfce] focus-visible:ring-[#f06f61] focus-visible:ring-offset-[#f7f1e8]"
+      }`}
+      aria-pressed={active}
+    >
+      {label}
+    </button>
   );
 }

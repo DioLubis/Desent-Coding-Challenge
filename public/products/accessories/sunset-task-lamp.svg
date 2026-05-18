@@ -1,0 +1,36 @@
+<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="lampLight" cx="50%" cy="30%">
+      <stop offset="0%" style="stop-color:#ffff99;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#ffcc33;stop-opacity:0" />
+    </radialGradient>
+    <linearGradient id="lampGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffd36b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e1922f;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="300" fill="#f5f5f5"/>
+  <g id="lamp">
+    <!-- Light glow -->
+    <ellipse cx="200" cy="80" rx="70" ry="60" fill="url(#lampLight)"/>
+    <!-- Lamp shade -->
+    <path d="M 150 70 Q 140 90 150 140 L 250 140 Q 260 90 250 70 Z" fill="url(#lampGrad)" stroke="#d9872b" stroke-width="2"/>
+    <!-- Shade detail -->
+    <line x1="160" y1="90" x2="170" y2="135" stroke="#e1922f" stroke-width="1" opacity="0.5"/>
+    <line x1="200" y1="70" x2="200" y2="140" stroke="#e1922f" stroke-width="1" opacity="0.5"/>
+    <line x1="240" y1="90" x2="230" y2="135" stroke="#e1922f" stroke-width="1" opacity="0.5"/>
+    <!-- Neck/arm -->
+    <path d="M 190 145 Q 180 160 170 185" stroke="#888" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <!-- Adjustment joint -->
+    <circle cx="170" cy="185" r="5" fill="#666"/>
+    <!-- Clamp arm -->
+    <path d="M 170 185 Q 160 190 160 200" stroke="#777" stroke-width="8" fill="none" stroke-linecap="round"/>
+    <!-- Clamp -->
+    <rect x="145" y="198" width="30" height="8" fill="#888" rx="3"/>
+    <!-- Base/clamp interior -->
+    <rect x="150" y="202" width="20" height="4" fill="#444" rx="1"/>
+    <!-- On/off switch indicator -->
+    <circle cx="195" cy="200" r="4" fill="#ffcc00"/>
+  </g>
+  <text x="200" y="280" font-family="Arial" font-size="14" text-anchor="middle" fill="#666">Sunset Task Lamp</text>
+</svg>

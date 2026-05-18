@@ -1,0 +1,36 @@
+<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="coffeeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#9b7766;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#5d4037;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="metalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e8e8e8;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#b0b0b0;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="300" fill="#f5f5f5"/>
+  <g id="machine">
+    <!-- Main body -->
+    <rect x="120" y="80" width="160" height="140" fill="url(#coffeeGrad)" rx="8" stroke="#4d2817" stroke-width="2"/>
+    <!-- Display/control panel -->
+    <rect x="130" y="90" width="140" height="50" fill="#2a1810" rx="4"/>
+    <!-- Display screen -->
+    <rect x="140" y="100" width="70" height="25" fill="#1a1a1a" rx="2"/>
+    <text x="175" y="120" font-family="Arial" font-size="10" text-anchor="middle" fill="#4a9eff">READY</text>
+    <!-- Control buttons -->
+    <circle cx="225" cy="110" r="4" fill="#666"/>
+    <circle cx="225" cy="127" r="4" fill="#666"/>
+    <!-- Portafilter -->
+    <path d="M 160 130 L 160 200" stroke="#3d2817" stroke-width="12" stroke-linecap="round"/>
+    <!-- Cup tray/drip shelf -->
+    <rect x="110" y="220" width="180" height="8" fill="url(#metalGrad)" rx="2"/>
+    <!-- Grinder hopper -->
+    <polygon points="280,95 300,95 295,130 285,130" fill="url(#coffeeGrad)" stroke="#4d2817" stroke-width="1"/>
+    <!-- Spout -->
+    <path d="M 290 160 L 310 200" stroke="#888" stroke-width="6" stroke-linecap="round"/>
+    <!-- Power cord -->
+    <path d="M 150 220 L 140 250" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  <text x="200" y="280" font-family="Arial" font-size="14" text-anchor="middle" fill="#666">Coffee Machine</text>
+</svg>

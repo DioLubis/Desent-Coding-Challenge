@@ -1,4 +1,13 @@
-import { findAccessory, findChair, findDesk, type SelectedAccessory } from "@/data/products";
+import {
+  findProduct,
+  getMonthlyPrice,
+  getWeeklyPrice,
+  calculateSelectedSetupTotal,
+  type SelectedProduct,
+} from "@/data/products";
+
+export { calculateSelectedSetupTotal };
+export { getMonthlyPrice, getWeeklyPrice };
 
 export type RentalDurationOption = {
   label: string;
@@ -14,26 +23,50 @@ export const rentalDurationOptions: RentalDurationOption[] = [
 ];
 
 export function calculateMonthlyTotal(
-  selectedDesk: string | null,
-  selectedChair: string | null,
-  selectedAccessories: SelectedAccessory[],
+  selectedProducts: SelectedProduct[],
 ) {
-  const deskTotal = findDesk(selectedDesk)?.pricePerMonth ?? 0;
-  const chairTotal = findChair(selectedChair)?.pricePerMonth ?? 0;
-  const accessoryTotal = selectedAccessories.reduce((total, selectedAccessory) => {
-    const accessory = findAccessory(selectedAccessory.id);
+  let pricedItems = 0;
 
-    return total + (accessory?.pricePerMonth ?? 0) * selectedAccessory.quantity;
+  const total = selectedProducts.reduce((runningTotal, selectedProduct) => {
+    const product = findProduct(selectedProduct.id);
+    const price = product ? getMonthlyPrice(product) : null;
+
+    if (price === null) {
+      return runningTotal;
+    }
+
+    pricedItems += selectedProduct.quantity;
+    return runningTotal + price * selectedProduct.quantity;
   }, 0);
 
-  return deskTotal + chairTotal + accessoryTotal;
+  return pricedItems === 0 ? null : total;
+}
+
+export function calculateWeeklyTotal(selectedProducts: SelectedProduct[]) {
+  let pricedItems = 0;
+
+  const total = selectedProducts.reduce((runningTotal, selectedProduct) => {
+    const product = findProduct(selectedProduct.id);
+    const price = product ? getWeeklyPrice(product) : null;
+
+    if (price === null) {
+      return runningTotal;
+    }
+
+    pricedItems += selectedProduct.quantity;
+    return runningTotal + price * selectedProduct.quantity;
+  }, 0);
+
+  return pricedItems === 0 ? null : total;
 }
 
 export function getRentalDuration(label: string) {
   return rentalDurationOptions.find((option) => option.label === label) ?? rentalDurationOptions[0];
 }
 
-export function calculateRentalEstimate(monthlyTotal: number, durationLabel: string) {
+export function calculateRentalEstimate(monthlyTotal: number | null, durationLabel: string) {
+  if (monthlyTotal === null) return null;
+
   return monthlyTotal * getRentalDuration(durationLabel).months;
 }
 

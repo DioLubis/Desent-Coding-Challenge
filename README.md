@@ -31,7 +31,8 @@ Placeholder: `https://github.com/your-username/monis-rent-workspace-configurator
 
 ## Features
 
-- ✅ **Visual Workspace Preview** - See your workspace setup update in real-time
+- ✅ **Realistic Product Visuals** - High-quality product images for all desks, chairs, and accessories
+- ✅ **Visual Workspace Preview** - See your workspace setup update in real-time with actual product images
 - ✅ **Multiple Desk Options** - Choose from 3 carefully curated desk styles (Compact, Popular, Premium)
 - ✅ **Multiple Chair Options** - Select from 3 ergonomic and aesthetic chair choices
 - ✅ **Accessory Add-ons** - Customize with 6 accessories (monitors, lamps, plants, coffee machine, shelves, planning board)
@@ -301,6 +302,23 @@ Before submitting this project, ensure:
 
 ```
 monis-rent-workspace-configurator/
+├── public/
+│   └── products/
+│       ├── desks/                    # Desk product images
+│       │   ├── bamboo-standing-desk.svg
+│       │   ├── compact-focus-desk.svg
+│       │   └── founder-studio-desk.svg
+│       ├── chairs/                   # Chair product images
+│       │   ├── ergo-cloud-chair.svg
+│       │   ├── rattan-lounge-chair.svg
+│       │   └── task-pro-chair.svg
+│       └── accessories/              # Accessory product images
+│           ├── creator-monitor.svg
+│           ├── sunset-task-lamp.svg
+│           ├── tropical-plant.svg
+│           ├── coffee-machine.svg
+│           ├── open-shelf.svg
+│           └── planning-board.svg
 ├── src/
 │   ├── app/
 │   │   ├── layout.tsx          # Root layout
@@ -308,11 +326,11 @@ monis-rent-workspace-configurator/
 │   │   └── globals.css         # Global styles
 │   ├── components/
 │   │   ├── configurator-shell.tsx    # Main component
-│   │   ├── product-selection.tsx     # Selection UI
-│   │   ├── workspace-preview.tsx     # Preview component
+│   │   ├── product-selection.tsx     # Selection UI with product images
+│   │   ├── workspace-preview.tsx     # Preview component with product images
 │   │   └── summary-checkout.tsx      # Summary component
 │   ├── data/
-│   │   ├── products.ts         # Product catalog
+│   │   ├── products.ts         # Product catalog with image paths
 │   │   └── products.test.ts    # Product tests
 │   ├── lib/
 │   │   ├── pricing.ts          # Pricing logic
@@ -324,6 +342,26 @@ monis-rent-workspace-configurator/
 ├── tsconfig.json               # TypeScript configuration
 └── README.md                   # This file
 ```
+
+## Product Images
+
+The application uses high-quality product images instead of generic icons for a more realistic and engaging experience:
+
+### Asset Structure
+- **Desks:** 3 desk designs (Bamboo Standing, Compact Focus, Founder Studio)
+- **Chairs:** 3 chair designs (Ergo Cloud, Rattan Lounge, Task Pro)
+- **Accessories:** 6 accessories (Monitor, Lamp, Plant, Coffee Machine, Shelf, Planning Board)
+
+### Image Format
+- **Format:** SVG (scalable vector graphics)
+- **Location:** `/public/products/{category}/{product-id}.svg`
+- **Optimization:** SVG files are lightweight and scale perfectly on any device
+- **Replace:** To use real product photos, simply replace the SVG files with high-quality PNG/JPG images
+
+### How Images Are Used
+1. **Product Selection Cards** - Full product images displayed in desk/chair/accessory selection panels
+2. **Workspace Preview** - Product images integrated into the visual workspace representation
+3. **Responsive Design** - Images automatically scale for mobile and desktop views
 
 ---
 

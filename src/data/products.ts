@@ -1,243 +1,296 @@
-import type { LucideIcon } from "lucide-react";
-import {
-  Armchair,
-  BookOpen,
-  Coffee,
-  LampDesk,
-  Leaf,
-  Monitor,
-  PanelsTopLeft,
-  Table2,
-} from "lucide-react";
+import rawProducts from "../../public/monis-electronics-with-prices.json";
 
-export type ProductCategory = "desk" | "chair" | "accessory";
+export type RawProductVariant = {
+  name?: string;
+  priceWeekly?: number | null;
+  priceMonthly?: number | null;
+  originalPriceWeekly?: number | null;
+  originalPriceMonthly?: number | null;
+  savingsLabel?: string | null;
+};
 
-export type ProductTag = "Popular" | "Ergonomic" | "Compact" | "Premium";
+export type RawProduct = {
+  id?: string;
+  category?: string;
+  name?: string;
+  productUrl?: string;
+  imageUrl?: string;
+  localImage?: string;
+  shortDescription?: string;
+  specs?: Record<string, unknown>;
+  priceCurrency?: string;
+  priceBillingUnit?: string;
+  priceWeekly?: number | null;
+  priceMonthly?: number | null;
+  originalPriceWeekly?: number | null;
+  originalPriceMonthly?: number | null;
+  savingsLabel?: string | null;
+  priceStatus?: string;
+  priceNote?: string | null;
+  variants?: RawProductVariant[];
+};
 
-export type ConfiguratorItem = {
-  id: string;
-  name: string;
-  category: ProductCategory;
-  pricePerMonth: number;
-  visual: {
-    icon: LucideIcon;
-    color: string;
-    accent: string;
-  };
+export type CatalogSectionKey =
+  | "monitors"
+  | "office-accessories"
+  | "smart-home"
+  | "computer"
+  | "gaming"
+  | "audio-video";
+
+export type CatalogSection = {
+  key: CatalogSectionKey;
+  label: string;
   description: string;
-  tag?: ProductTag;
 };
 
-export type Desk = ConfiguratorItem & {
-  category: "desk";
+export type CatalogProduct = {
+  id: string;
+  category: string;
+  section: CatalogSectionKey | "other";
+  name: string;
+  productUrl?: string;
+  imageUrl?: string;
+  localImage?: string;
+  image: string;
+  shortDescription: string;
+  specs: Record<string, unknown>;
+  priceCurrency: string;
+  priceBillingUnit?: string;
+  priceWeekly: number | null;
+  priceMonthly: number | null;
+  originalPriceWeekly?: number | null;
+  originalPriceMonthly?: number | null;
+  savingsLabel?: string | null;
+  priceStatus?: string;
+  priceNote?: string | null;
+  variants: RawProductVariant[];
 };
 
-export type Chair = ConfiguratorItem & {
-  category: "chair";
-};
-
-export type Accessory = ConfiguratorItem & {
-  category: "accessory";
-  quantityAdjustable?: boolean;
-  maxQuantity?: number;
-};
-
-export type SelectedAccessory = {
-  id: Accessory["id"];
+export type SelectedProduct = {
+  id: string;
   quantity: number;
 };
 
 export type ConfiguratorState = {
-  selectedDesk: Desk["id"] | null;
-  selectedChair: Chair["id"] | null;
-  selectedAccessories: SelectedAccessory[];
-  totalMonthlyPrice: number;
+  selectedProducts: SelectedProduct[];
+  totalWeeklyPrice: number | null;
+  totalMonthlyPrice: number | null;
 };
 
-export const desks: Desk[] = [
+const fallbackImage = "/products/fallback-product.svg";
+
+export const catalogSections: CatalogSection[] = [
   {
-    id: "bamboo-standing-desk",
-    name: "Bamboo Standing Desk",
-    category: "desk",
-    pricePerMonth: 1680000,
-    visual: {
-      icon: Table2,
-      color: "bg-[#d78f43]",
-      accent: "from-[#f5b76b] to-[#bc6f2e]",
-    },
-    description: "Adjustable bamboo desk with a wide surface for laptop, notebook, and coffee.",
-    tag: "Popular",
+    key: "monitors",
+    label: "Monitors",
+    description: "Display upgrades for focused work and creative setups.",
   },
   {
-    id: "compact-focus-desk",
-    name: "Compact Focus Desk",
-    category: "desk",
-    pricePerMonth: 1120000,
-    visual: {
-      icon: PanelsTopLeft,
-      color: "bg-[#3f7fbe]",
-      accent: "from-[#83c5f4] to-[#2f72b6]",
-    },
-    description: "Small-footprint desk for apartments, guest rooms, and tight villa corners.",
-    tag: "Compact",
+    key: "office-accessories",
+    label: "Office Accessories",
+    description: "Desk utilities, cable support, and workspace add-ons.",
   },
   {
-    id: "founder-studio-desk",
-    name: "Founder Studio Desk",
-    category: "desk",
-    pricePerMonth: 2100000,
-    visual: {
-      icon: Table2,
-      color: "bg-[#33313f]",
-      accent: "from-[#777281] to-[#252431]",
-    },
-    description: "Premium executive surface with cable tray and room for a full creator setup.",
-    tag: "Premium",
+    key: "smart-home",
+    label: "Smart Home",
+    description: "Comfort and convenience items for the workspace and room.",
+  },
+  {
+    key: "computer",
+    label: "Computer",
+    description: "Core computing gear that can sit alongside the main setup.",
+  },
+  {
+    key: "gaming",
+    label: "Gaming",
+    description: "Optional equipment for high-performance and entertainment use.",
+  },
+  {
+    key: "audio-video",
+    label: "Audio & Video",
+    description: "Camera, sound, and media equipment for call-heavy work.",
   },
 ];
 
-export const chairs: Chair[] = [
-  {
-    id: "ergo-cloud-chair",
-    name: "Ergo Cloud Chair",
-    category: "chair",
-    pricePerMonth: 1120000,
-    visual: {
-      icon: Armchair,
-      color: "bg-[#325d66]",
-      accent: "from-[#76b5bd] to-[#2c6d79]",
-    },
-    description: "Breathable ergonomic support for long build days and client calls.",
-    tag: "Ergonomic",
-  },
-  {
-    id: "rattan-lounge-chair",
-    name: "Rattan Lounge Chair",
-    category: "chair",
-    pricePerMonth: 780000,
-    visual: {
-      icon: Armchair,
-      color: "bg-[#a86c3d]",
-      accent: "from-[#d99a5d] to-[#8e552e]",
-    },
-    description: "Relaxed Bali texture with a supportive cushion and softer visual presence.",
-    tag: "Popular",
-  },
-  {
-    id: "task-pro-chair",
-    name: "Task Pro Chair",
-    category: "chair",
-    pricePerMonth: 1350000,
-    visual: {
-      icon: Armchair,
-      color: "bg-[#22272f]",
-      accent: "from-[#6d7685] to-[#1f252d]",
-    },
-    description: "Premium posture chair with adjustable arms, lumbar support, and headrest.",
-    tag: "Premium",
-  },
-];
+const sectionByCategory: Record<string, CatalogSectionKey> = {
+  monitors: "monitors",
+  "office-accessories": "office-accessories",
+  "smart-home": "smart-home",
+  computer: "computer",
+  gaming: "gaming",
+  "audio-video": "audio-video",
+};
 
-export const accessories: Accessory[] = [
-  {
-    id: "creator-monitor",
-    name: "27-inch Creator Monitor",
-    category: "accessory",
-    pricePerMonth: 1360000,
-    visual: {
-      icon: Monitor,
-      color: "bg-[#33313f]",
-      accent: "from-[#6c6b7d] to-[#252431]",
-    },
-    description: "Sharp external display for design reviews, spreadsheets, and async calls.",
-    tag: "Popular",
-    quantityAdjustable: true,
-    maxQuantity: 2,
-  },
-  {
-    id: "sunset-task-lamp",
-    name: "Sunset Task Lamp",
-    category: "accessory",
-    pricePerMonth: 360000,
-    visual: {
-      icon: LampDesk,
-      color: "bg-[#f2b84b]",
-      accent: "from-[#ffd36b] to-[#e1922f]",
-    },
-    description: "Dimmable amber lamp that keeps the desk warm into the evening.",
-    tag: "Compact",
-  },
-  {
-    id: "tropical-plant",
-    name: "Tropical Desk Plant",
-    category: "accessory",
-    pricePerMonth: 220000,
-    visual: {
-      icon: Leaf,
-      color: "bg-[#4a8b62]",
-      accent: "from-[#86c987] to-[#367a4c]",
-    },
-    description: "Low-maintenance greenery to soften the work zone.",
-  },
-  {
-    id: "coffee-machine",
-    name: "Countertop Coffee Machine",
-    category: "accessory",
-    pricePerMonth: 980000,
-    visual: {
-      icon: Coffee,
-      color: "bg-[#7b5140]",
-      accent: "from-[#b98568] to-[#694436]",
-    },
-    description: "Compact espresso setup for villa teams and focused mornings.",
-    tag: "Premium",
-  },
-  {
-    id: "open-shelf",
-    name: "Open Utility Shelf",
-    category: "accessory",
-    pricePerMonth: 520000,
-    visual: {
-      icon: BookOpen,
-      color: "bg-[#9b69b6]",
-      accent: "from-[#cf9ce6] to-[#8350a2]",
-    },
-    description: "A clean shelf for books, camera gear, cables, and daily supplies.",
-    tag: "Compact",
-  },
-  {
-    id: "planning-board",
-    name: "Founder Planning Board",
-    category: "accessory",
-    pricePerMonth: 440000,
-    visual: {
-      icon: PanelsTopLeft,
-      color: "bg-[#f06f61]",
-      accent: "from-[#ff9f8e] to-[#db584d]",
-    },
-    description: "Portable whiteboard kit for sprint planning and workshop days.",
-    tag: "Ergonomic",
-  },
-];
+function toSectionKey(category: string | undefined): CatalogSectionKey | "other" {
+  if (!category) return "other";
+  return sectionByCategory[category] ?? "other";
+}
+
+function toCatalogProduct(product: RawProduct, index: number): CatalogProduct {
+  const image = product.localImage || product.imageUrl || fallbackImage;
+
+  return {
+    id: product.id || `product-${index + 1}`,
+    category: product.category || "uncategorized",
+    section: toSectionKey(product.category),
+    name: product.name || "Unnamed product",
+    productUrl: product.productUrl,
+    imageUrl: product.imageUrl,
+    localImage: product.localImage,
+    image,
+    shortDescription: product.shortDescription || "Details coming soon.",
+    specs: product.specs || {},
+    priceCurrency: product.priceCurrency || "USD",
+    priceBillingUnit: product.priceBillingUnit,
+    priceWeekly: product.priceWeekly ?? null,
+    priceMonthly: product.priceMonthly ?? null,
+    originalPriceWeekly: product.originalPriceWeekly ?? null,
+    originalPriceMonthly: product.originalPriceMonthly ?? null,
+    savingsLabel: product.savingsLabel ?? null,
+    priceStatus: product.priceStatus,
+    priceNote: product.priceNote ?? null,
+    variants: Array.isArray(product.variants) ? product.variants : [],
+  };
+}
+
+export const products: CatalogProduct[] = (rawProducts as RawProduct[]).map(toCatalogProduct);
+
+export const productCategories = catalogSections.map((section) => section.key);
 
 export const defaultConfiguratorSelections = {
-  selectedDesk: null,
-  selectedChair: null,
-  selectedAccessories: [],
-} satisfies Omit<ConfiguratorState, "totalMonthlyPrice">;
+  selectedProducts: [],
+} satisfies Pick<ConfiguratorState, "selectedProducts">;
 
-export const findDesk = (id: string | null) =>
-  id ? desks.find((desk) => desk.id === id) : undefined;
+export function findProduct(id: string | null | undefined) {
+  if (!id) return undefined;
+  return products.find((product) => product.id === id);
+}
 
-export const findChair = (id: string | null) =>
-  id ? chairs.find((chair) => chair.id === id) : undefined;
+export function findProductsByIds(ids: string[]) {
+  return ids.map((id) => findProduct(id)).filter((item): item is CatalogProduct => Boolean(item));
+}
 
-export const findAccessory = (id: string) =>
-  accessories.find((accessory) => accessory.id === id);
+export function getProductImage(product: Pick<CatalogProduct, "image" | "imageUrl" | "localImage">) {
+  return product.localImage || product.imageUrl || product.image || fallbackImage;
+}
 
-export const formatIdr = (value: number) =>
-  new Intl.NumberFormat("id-ID", {
+export function getProductSection(product: Pick<CatalogProduct, "section">) {
+  return product.section;
+}
+
+export function groupProductsBySection(items: CatalogProduct[] = products) {
+  return catalogSections
+    .map((section) => ({
+      ...section,
+      products: items.filter((product) => product.section === section.key),
+    }))
+    .filter((section) => section.products.length > 0);
+}
+
+export function formatPrice(
+  value: number | null | undefined,
+  currency = "USD",
+  fallback = "Price on request",
+) {
+  if (value === null || value === undefined || !Number.isFinite(value) || value <= 0) {
+    return fallback;
+  }
+
+  return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "IDR",
+    currency,
     maximumFractionDigits: 0,
-  }).format(value);
+  }).format(Math.round(value));
+}
+
+export function formatCurrency(value: number | null | undefined, currency = "USD") {
+  return formatPrice(value, currency);
+}
+
+export function formatMoneyOrFallback(
+  value: number | null | undefined,
+  currency: string,
+  fallback: string,
+) {
+  return formatPrice(value, currency, fallback);
+}
+
+export function formatCategoryLabel(category: string | undefined | null) {
+  if (!category) return "Uncategorized";
+
+  return category
+    .replace(/[-_]/g, " ")
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+export function getWeeklyPrice(product: Pick<CatalogProduct, "priceWeekly" | "priceMonthly">) {
+  if (product.priceWeekly !== null && product.priceWeekly !== undefined) {
+    return product.priceWeekly;
+  }
+
+  if (product.priceMonthly !== null && product.priceMonthly !== undefined) {
+    return product.priceMonthly / 4;
+  }
+
+  return null;
+}
+
+export function getMonthlyPrice(product: Pick<CatalogProduct, "priceWeekly" | "priceMonthly">) {
+  if (product.priceMonthly !== null && product.priceMonthly !== undefined) {
+    return product.priceMonthly;
+  }
+
+  if (product.priceWeekly !== null && product.priceWeekly !== undefined) {
+    return product.priceWeekly * 4;
+  }
+
+  return null;
+}
+
+export function calculateSelectedSetupTotal(selectedItems: Array<SelectedProduct | { product: CatalogProduct; quantity: number }>) {
+  let weeklyTotal = 0;
+  let monthlyTotal = 0;
+  let unavailableCount = 0;
+
+  selectedItems.forEach((selectedItem) => {
+    const product =
+      "product" in selectedItem ? selectedItem.product : findProduct(selectedItem.id);
+    const quantity = selectedItem.quantity;
+
+    if (!product) return;
+
+    const weeklyPrice = getWeeklyPrice(product);
+    const monthlyPrice = getMonthlyPrice(product);
+
+    if (weeklyPrice === null && monthlyPrice === null) {
+      unavailableCount += quantity;
+      return;
+    }
+
+    if (weeklyPrice !== null) {
+      weeklyTotal += weeklyPrice * quantity;
+    }
+
+    if (monthlyPrice !== null) {
+      monthlyTotal += monthlyPrice * quantity;
+    }
+  });
+
+  return {
+    weeklyTotal: weeklyTotal > 0 ? weeklyTotal : null,
+    monthlyTotal: monthlyTotal > 0 ? monthlyTotal : null,
+    unavailableCount,
+  };
+}
+
+export function calculateMonthlyTotal(selectedItems: SelectedProduct[]) {
+  return calculateSelectedSetupTotal(selectedItems).monthlyTotal;
+}
+
+export function calculateWeeklyTotal(selectedItems: SelectedProduct[]) {
+  return calculateSelectedSetupTotal(selectedItems).weeklyTotal;
+}
