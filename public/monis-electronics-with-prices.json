@@ -4,7 +4,7 @@
     "category": "monitors",
     "name": "24\" Full HD Office Monitor A24i 2026",
     "productUrl": "https://www.monis.rent/products/24-full-hd-office-monitor-a24i-2026",
-    "imageUrl": "https://strapi.monis.rent/uploads/24_full_HD_office_monitor_a24i_2026_be9e6bf958.jpg",
+    "imageUrl": "/products/transparent/monitor-a24i-2026.png",
     "shortDescription": "Xiaomi Monitor A24i 2026, 23.8″ Fast IPS, 1920×1080 FHD, 144 Hz, 300 nits, HDMI 2.0, DisplayPort 1.4.",
     "specs": {
       "model": "P24FDA-RAGL",
@@ -32,7 +32,7 @@
     "category": "monitors",
     "name": "27\" 4K Multimedia Monitor",
     "productUrl": "https://www.monis.rent/products/27-4-k-multimedia-monitor",
-    "imageUrl": "https://strapi.monis.rent/uploads/27_4_K_A27_U_Multitasking_Monitor_1_ce29d15357.jpg",
+    "imageUrl": "/products/transparent/monitor-27-4k-multimedia.png",
     "shortDescription": "Redmi 27\" 4K monitor with USB-C or HDMI, 350 nits, 3840×2160, 100% sRGB, 95% DCI-P3, HDR.",
     "specs": {
       "model": "Redmi A27U / Xiaomi A27Ui",
@@ -73,7 +73,7 @@
     "category": "monitors",
     "name": "34\" 4K Gaming Monitor",
     "productUrl": "https://www.monis.rent/products/34-4-k-curved-monitor-180-hz",
-    "imageUrl": "https://strapi.monis.rent/uploads/34_4_K_Gaming_Monitor_7_3f6b2ba627.jpg",
+    "imageUrl": "/products/transparent/monitor-34-4k-gaming.png",
     "shortDescription": "Xiaomi Mi Curved 34\" Gaming Monitor, 180 Hz, WQHD 3440×1440, 350 nits, 1 ms.",
     "specs": {
       "model": "C34WQBA",
@@ -100,7 +100,7 @@
     "category": "monitors",
     "name": "27\" 5K Apple Studio Display",
     "productUrl": "https://www.monis.rent/products/apple-studio-display",
-    "imageUrl": "https://strapi.monis.rent/uploads/Apple_Studio_Display_6_94c6329a05.jpg",
+    "imageUrl": "/products/transparent/apple-studio-display.png",
     "shortDescription": "27-inch 5K Retina display, 600 nits, P3 wide color, True Tone, 12MP Ultra-Wide camera, six-speaker system.",
     "specs": {
       "model": "Apple Studio Display",
@@ -144,7 +144,7 @@
     "category": "monitors",
     "name": "27\" Full HD Office Monitor A27i",
     "productUrl": "https://www.monis.rent/products/27-work-monitor-a27i",
-    "imageUrl": "https://strapi.monis.rent/uploads/A27i_front_35acc32043.jpg",
+    "imageUrl": "/products/transparent/monitor-a27i.png",
     "shortDescription": "Xiaomi 27\" IPS monitor, 100 Hz, 1920×1080 FHD, 100% sRGB, ΔE<2, VESA mount.",
     "specs": {
       "model": "P27FBA-RAGL",
@@ -171,7 +171,7 @@
     "category": "monitors",
     "name": "32\" QHD Ergonomic Monitor",
     "productUrl": "https://www.monis.rent/products/32-4-k-ergonomic-monitor",
-    "imageUrl": "https://strapi.monis.rent/uploads/32_LG_Fine_Art_addtition_1_1c49831c40.jpg",
+    "imageUrl": "/products/transparent/monitor-32-qhd-ergonomic.png",
     "shortDescription": "LG Ergo Fine Art 32\" QHD IPS screen, USB-C power delivery up to 96W, Ergo stand.",
     "specs": {
       "model": "LG UltraFine 32QP880N-B",
@@ -197,7 +197,7 @@
     "category": "monitors",
     "name": "24\" Full HD Office Monitor A24i",
     "productUrl": "https://www.monis.rent/products/24-full-hd-office-monitor-a24i-2",
-    "imageUrl": "https://strapi.monis.rent/uploads/24_Full_HD_Office_Monitor_A24i_1_7f987306af.jpg",
+    "imageUrl": "/products/transparent/monitor-a24i.png",
     "shortDescription": "Xiaomi Mi 23.8\" Desktop Monitor A24i, 100 Hz, 1920×1080 FHD, 250 nits, 99% sRGB.",
     "specs": {
       "model": "RMMNT238NF",
@@ -224,7 +224,7 @@
     "category": "monitors",
     "name": "24\" Full HD Office Monitor 1C",
     "productUrl": "https://www.monis.rent/products/full-hd-office-24",
-    "imageUrl": "https://strapi.monis.rent/uploads/24_Full_HD_75_Hz_IPS_Desktop_1_C_Monitor_front_7eeba14881.jpg",
+    "imageUrl": "/products/transparent/monitor-24-1c.png",
     "shortDescription": "Xiaomi Mi 23.8\" Monitor 1C, 75 Hz, 1920×1080 FHD, 250 nits, 99% sRGB.",
     "specs": {
       "model": "RMMNT238NF",
@@ -251,7 +251,7 @@
     "category": "office-accessories",
     "name": "Smart Power Strip 3",
     "productUrl": "https://www.monis.rent/products/international-power-strip",
-    "imageUrl": "https://strapi.monis.rent/uploads/Xiaomi_MI_Smart_Power_Strip_Plug_black_3965e07e42.jpg",
+    "imageUrl": "/products/transparent/smart-power-strip-3.png",
     "shortDescription": "International power strip with European Type F, American Type A, Australian Type I sockets, 3 USB ports, 2m length.",
     "specs": {
       "model": "XMCXB01QM",
@@ -275,7 +275,7 @@
     "category": "office-accessories",
     "name": "Logitech MX Keyboard",
     "productUrl": "https://www.monis.rent/products/logitech-mx-keyboard",
-    "imageUrl": "https://cdn.prod.website-files.com/62ec28c28759bd05a815b88c/62ec28c28759bdba5015b899/6863ed84b43cca7090fc06ad_Logitech_MX_keys_1_9977480ae1.jpeg",
+    "imageUrl": "/products/transparent/logitech-mx-keyboard.png",
     "shortDescription": "Wireless keyboard with Easy-Switch for up to 3 computers, backlighting, rechargeable battery.",
     "specs": {
       "model": "MX Keys",
@@ -299,7 +299,7 @@
     "category": "office-accessories",
     "name": "Logitech MX Master Mouse S3",
     "productUrl": "https://www.monis.rent/products/logitech-mx-master-mouse-s3",
-    "imageUrl": "https://strapi.monis.rent/uploads/Logitech_S3_6_4cf1e523b8.jpg",
+    "imageUrl": "/products/transparent/logitech-mx-master-mouse-s3.png",
     "shortDescription": "Wireless ergonomic mouse with 8,000 DPI Darkfield sensor and 70 days battery life.",
     "specs": {
       "model": "S3",
@@ -323,7 +323,7 @@
     "category": "office-accessories",
     "name": "6-in-1 Converter Hub",
     "productUrl": "https://www.monis.rent/products/6-in-1-converter-hub",
-    "imageUrl": "https://strapi.monis.rent/uploads/mac_dongle_product_photo_0316bc4b50.jpg",
+    "imageUrl": "/products/transparent/6-in-1-converter-hub.png",
     "shortDescription": "USB-C hub with USB-C PD, USB 3.0, USB 2.0, 4K HDMI 30Hz, Micro SD and SD card slots.",
     "specs": {
       "model": "70411",
@@ -347,7 +347,7 @@
     "category": "office-accessories",
     "name": "Logitech 4K Webcam",
     "productUrl": "https://www.monis.rent/products/logitech-4-k-webcam",
-    "imageUrl": "https://strapi.monis.rent/uploads/Logitech_Brio_4_K_Webcam_6_d7ea7e69b0.jpg",
+    "imageUrl": "/products/transparent/logitech-4k-webcam.png",
     "shortDescription": "Logitech Brio 4K webcam with 5x HD zoom, integrated microphone and noise canceling.",
     "specs": {
       "model": "Brio 4K",
@@ -373,7 +373,7 @@
     "category": "office-accessories",
     "name": "Ergonomic Laptop Stand",
     "productUrl": "https://www.monis.rent/products/ergonomic-laptop-stand",
-    "imageUrl": "https://strapi.monis.rent/uploads/Laptop_stand_back_new2_91df29c3c8.jpg",
+    "imageUrl": "/products/transparent/ergonomic-laptop-stand.png",
     "shortDescription": "Adjustable laptop stand compatible with laptops from 10 to 17 inches.",
     "specs": {
       "model": "KOLMI",
@@ -397,7 +397,7 @@
     "category": "office-accessories",
     "name": "Adjustable Monitor Stand",
     "productUrl": "https://www.monis.rent/products/adjustable-monitor-stand",
-    "imageUrl": "https://strapi.monis.rent/uploads/Adjustable_Monitor_Stand_4_e6ae3a1d06.jpg",
+    "imageUrl": "/products/transparent/adjustable-monitor-stand.png",
     "shortDescription": "Adjustable monitor riser with 11–18cm height adjustment and up to 15kg load bearing.",
     "specs": {
       "model": "Nillkin",
@@ -423,7 +423,7 @@
     "category": "office-accessories",
     "name": "Display Docking Station",
     "productUrl": "https://www.monis.rent/products/display-docking-station",
-    "imageUrl": "https://strapi.monis.rent/uploads/Chat_GPT_Image_Apr_7_2026_02_38_23_PM_5d6f60c5e2.jpg",
+    "imageUrl": "/products/transparent/display-docking-station.png",
     "shortDescription": "DisplayLink triple display dock with 100W USB-C laptop charging, USB-C/USB-A ports, Gigabit Ethernet and 4K support.",
     "specs": {
       "model": "Wavlink Universal 15-in-1 USB-C Docking Station WL-UG63PD25",
@@ -449,7 +449,7 @@
     "category": "smart-home",
     "name": "Starlink Kit (incl. plan)",
     "productUrl": "https://www.monis.rent/products/starlink-kit-incl-plan",
-    "imageUrl": "https://strapi.monis.rent/uploads/Starlink_V4_Gen_3_7_41ef714dbb.jpg",
+    "imageUrl": "/products/transparent/starlink-kit.png",
     "shortDescription": "Wi‑Fi 6 router and satellite kit with up to 220 Mbps throughput, 20–40 ms latency, Roam Unlimited plan included.",
     "specs": {
       "model": "Starlink V4 Gen 3 / Standard KIT",
@@ -475,7 +475,7 @@
     "category": "smart-home",
     "name": "Hue Signe Gradient Lamp",
     "productUrl": "https://www.monis.rent/products/hue-signe-gradient-lamp",
-    "imageUrl": "https://strapi.monis.rent/uploads/Philips_Hue_Signe_gradient_table_lamp_new_e4eeba8c56.jpg",
+    "imageUrl": "/products/transparent/hue-signe-gradient-lamp.png",
     "shortDescription": "Multicolour gradient smart table lamp with Bluetooth/Zigbee, 2000–6500K colour range and voice control.",
     "specs": {
       "model": "Gradient Smart Table Lamp",
@@ -501,7 +501,7 @@
     "category": "smart-home",
     "name": "Nespresso Essenza Coffee Machine",
     "productUrl": "https://www.monis.rent/products/nespresso-essenza-coffee-machine",
-    "imageUrl": "https://strapi.monis.rent/uploads/NESPRESSO_Essenza_Mini_2_4ea4cc0abc.jpg",
+    "imageUrl": "/products/transparent/nespresso-essenza.png",
     "shortDescription": "Compact Nespresso coffee machine with 19-bar pressure pump, 0.6L tank, 1260W power and 25-second heat-up.",
     "specs": {
       "pressure": "19-bar pump",
@@ -527,7 +527,7 @@
     "category": "smart-home",
     "name": "Bosch Coffee Maker",
     "productUrl": "https://www.monis.rent/products/bosch-coffee-maker",
-    "imageUrl": "https://strapi.monis.rent/uploads/Bosch_Drip_95f3cf0130.jpg",
+    "imageUrl": "/products/transparent/bosch-coffee-maker.png",
     "shortDescription": "Filter coffee maker with 1200W power, 1.4L water tank and auto-off after 40 minutes.",
     "specs": {
       "model": "Bosch Coffee Maker TKA2M113",
@@ -551,7 +551,7 @@
     "category": "smart-home",
     "name": "Smart Dehumidifier Lite",
     "productUrl": "https://www.monis.rent/products/smart-dehumidifier-lite",
-    "imageUrl": "https://strapi.monis.rent/uploads/Xiaomi_Smart_Dehumidifier_Lite_2_1e722aab84.jpg",
+    "imageUrl": "/products/transparent/smart-dehumidifier-lite.png",
     "shortDescription": "Smart dehumidifier with 13L/day dehumidification, 3L tank, smart Wi‑Fi control and quiet mode.",
     "specs": {
       "model": "Smart Dehumidifier Lite",
@@ -576,7 +576,7 @@
     "category": "smart-home",
     "name": "Smart Air Purifier",
     "productUrl": "https://www.monis.rent/products/smart-air-purifier",
-    "imageUrl": "https://strapi.monis.rent/uploads/Smart_Air_Purifier_6_5_bad4579786.jpg",
+    "imageUrl": "/products/transparent/smart-air-purifier.png",
     "shortDescription": "Smart air purifier for up to 50m² with 5-layer filtration, UV-LED sterilization, CADR 443 m³/h and app control.",
     "specs": {
       "model": "Smart Air Purifier 6",
@@ -603,7 +603,7 @@
     "category": "computer",
     "name": "Apple MacBook Neo",
     "productUrl": "https://www.monis.rent/products/apple-mac-book-neo",
-    "imageUrl": "https://strapi.monis.rent/uploads/Mac_Book_Neo_Silver_6_ceb2d1d671.jpg",
+    "imageUrl": "/products/transparent/apple-macbook-neo.png",
     "shortDescription": "13″ Liquid Retina display, Apple A18 Pro chip, 8GB memory, 256GB SSD, Wi‑Fi 6E, Bluetooth 6.0.",
     "specs": {
       "model": "MacBook Neo 13″ (2026)",
@@ -631,7 +631,7 @@
     "category": "computer",
     "name": "15\" Office Windows Laptop",
     "productUrl": "https://www.monis.rent/products/office-windows-laptop",
-    "imageUrl": "https://strapi.monis.rent/uploads/15_Office_Windows_Laptop_1_c1221bb234.jpg",
+    "imageUrl": "/products/transparent/office-windows-laptop.png",
     "shortDescription": "15.6-inch office laptop with 11th Gen Intel Core i3, 8GB RAM, 256GB SSD and Windows 10 Home.",
     "specs": {
       "model": "Xiaomi Redmi Book 15",
@@ -660,7 +660,7 @@
     "category": "computer",
     "name": "Apple Mac Mini M4",
     "productUrl": "https://www.monis.rent/products/apple-mac-mini-m4",
-    "imageUrl": "https://strapi.monis.rent/uploads/Mac_mini_M4_front_b152d10743.jpg",
+    "imageUrl": "/products/transparent/apple-mac-mini-m4.png",
     "shortDescription": "Apple M4 with 10-core CPU/GPU, 16GB unified memory, 256GB SSD, Thunderbolt 4, HDMI and USB-A.",
     "specs": {
       "chip": "Apple M4, 10-core CPU, 10-core GPU, 16-core Neural Engine",
@@ -684,7 +684,7 @@
     "category": "computer",
     "name": "Apple Mac Mini M2",
     "productUrl": "https://www.monis.rent/products/apple-mac-mini-m2-new",
-    "imageUrl": "https://strapi.monis.rent/uploads/Apple_Mac_Mini_M2_6_1d4fce6808.jpg",
+    "imageUrl": "/products/transparent/apple-mac-mini-m2.png",
     "shortDescription": "Apple M2 Mac Mini with 8-core CPU, 10-core GPU, 8/16GB memory, 256/512GB SSD and Thunderbolt 4.",
     "specs": {
       "chip": "Apple M2, 8-core CPU, 10-core GPU, 16-core Neural Engine",
@@ -708,7 +708,7 @@
     "category": "computer",
     "name": "Apple Mac Studio",
     "productUrl": "https://www.monis.rent/products/apple-mac-studio",
-    "imageUrl": "https://strapi.monis.rent/uploads/Mac_Studio_M1_6_7488521ebb.jpg",
+    "imageUrl": "/products/transparent/apple-mac-studio.png",
     "shortDescription": "Apple Mac Studio with M1 Max or M2 Ultra options, high-performance CPU/GPU, large unified memory and pro I/O.",
     "specs": {
       "chipOptions": "M1 Max 10-core CPU/24-core GPU/16-core Neural Engine or M2 Ultra 24-core CPU/60-core GPU/32-core Neural Engine",
@@ -731,7 +731,7 @@
     "category": "gaming",
     "name": "Sony PlayStation®5",
     "productUrl": "https://www.monis.rent/products/play-station-5",
-    "imageUrl": "https://strapi.monis.rent/uploads/Monis_PS_5_Titel_Photo_e3d9eb0af1.jpg",
+    "imageUrl": "/products/transparent/sony-playstation-5.png",
     "shortDescription": "PS5 with up to 8K resolution, 4K 120, HDR, 1TB SSD, disc/digital variants and DualSense controller.",
     "specs": {
       "model": "PS5 digital/disc edition",
@@ -759,7 +759,7 @@
     "category": "gaming",
     "name": "Nintendo Switch 2",
     "productUrl": "https://www.monis.rent/products/nintendo-switch-2",
-    "imageUrl": "https://strapi.monis.rent/uploads/Nintendo_Switch_2_3_207ed0a9cd.jpg",
+    "imageUrl": "/products/transparent/nintendo-switch-2.png",
     "shortDescription": "7\" OLED display, detachable Joy-Con controllers, preinstalled Mario Kart World, TV/handheld mode, 256GB storage.",
     "specs": {
       "model": "Nintendo Switch 2",
@@ -787,7 +787,7 @@
     "category": "gaming",
     "name": "PS5 Disc Games",
     "productUrl": "https://www.monis.rent/products/ps-5-games",
-    "imageUrl": "https://strapi.monis.rent/uploads/PS_5_Games_Titel_Photo_0946d017bb_bea93fb984.jpg",
+    "imageUrl": "/products/transparent/ps5-disc-games.png",
     "shortDescription": "PS5 disc games including NBA 2K25, Call of Duty, EA Sports FC, Gran Turismo, GTA V, Minecraft and more.",
     "specs": {
       "model": "PS5 Games in Disc edition",
@@ -810,7 +810,7 @@
     "category": "gaming",
     "name": "PS5 Wireless Controller",
     "productUrl": "https://www.monis.rent/products/ps-5-wireless-controller",
-    "imageUrl": "https://strapi.monis.rent/uploads/Sony_charging_station_4_d0825bba0c.jpg",
+    "imageUrl": "/products/transparent/ps5-wireless-controller.png",
     "shortDescription": "DualSense wireless controller with haptic feedback, adaptive triggers and built-in microphone.",
     "specs": {
       "model": "DualSense PS5",
@@ -834,7 +834,7 @@
     "category": "gaming",
     "name": "Switch 2 Controller Pack",
     "productUrl": "https://www.monis.rent/products/switch-2-controller-pack",
-    "imageUrl": "https://strapi.monis.rent/uploads/Nintendo_Switch_2_extra_controller_1_6508ccd5e2.jpg",
+    "imageUrl": "/products/transparent/switch-2-controller-pack.png",
     "shortDescription": "Two Joy-Con controller pairs, two Powerwave multifunctional grips and one quad charging stand.",
     "specs": {
       "model": "Nintendo Switch 2 – Controller Extra Pack",
@@ -858,7 +858,7 @@
     "category": "gaming",
     "name": "43\" Smart TV 4K",
     "productUrl": "https://www.monis.rent/products/43-smart-tv-4-k",
-    "imageUrl": "https://strapi.monis.rent/uploads/Smart_TV_4_K_43_1_8c5b8dbc8b.jpg",
+    "imageUrl": "/products/transparent/43-smart-tv-4k.png",
     "shortDescription": "43-inch 4K UHD Smart TV with HDR10+, Dolby Digital Plus, voice control, Wi‑Fi and Bluetooth.",
     "specs": {
       "model": "Samsung UA43AU7000 / LG 43UQ7550PSF",
@@ -883,7 +883,7 @@
     "category": "gaming",
     "name": "50'' Smart TV 4K",
     "productUrl": "https://www.monis.rent/products/smart-tv-4-k-50-grom-rent",
-    "imageUrl": "https://strapi.monis.rent/uploads/Smart_TV_4_K_50_1_9de8d7fa6b.jpg",
+    "imageUrl": "/products/transparent/50-smart-tv-4k.png",
     "shortDescription": "50-inch 4K UHD Smart TV with HDR, Dolby Digital Plus, Wi‑Fi 5, Bluetooth 5.2 and voice control.",
     "specs": {
       "model": "Samsung UA50AU8000, Sony KD-50X75, Samsung UA50BU8500, LG 50UP77, LG 50UQ7550",
@@ -908,7 +908,7 @@
     "category": "audio-video",
     "name": "Podcast Microphone Kit",
     "productUrl": "https://www.monis.rent/products/podcast-microphone-kit",
-    "imageUrl": "https://strapi.monis.rent/uploads/Shure_MV_7_Podcast_Microphone_Kit_1_fefd9453fb.jpg",
+    "imageUrl": "/products/transparent/podcast-microphone-kit.png",
     "shortDescription": "Shure MV7/MV7+ podcast kit with XLR, USB, 3.5mm monitor output and 50–16,000Hz dynamic sound.",
     "specs": {
       "models": "MV7 Podcast Kit, MV7+ Podcast Kit",
@@ -932,7 +932,7 @@
     "category": "audio-video",
     "name": "Microphone Boom Arm",
     "productUrl": "https://www.monis.rent/products/microphone-boom-arm",
-    "imageUrl": "https://strapi.monis.rent/uploads/Boom_arm_6_5e6dadb9ab.jpg",
+    "imageUrl": "/products/transparent/microphone-boom-arm.png",
     "shortDescription": "Heavy-duty suspension boom arm with 800mm reach, 1kg load capacity, cable management and table clamp mount.",
     "specs": {
       "model": "Soundtech V2",
@@ -957,7 +957,7 @@
     "category": "audio-video",
     "name": "Google TV Home Projector",
     "productUrl": "https://www.monis.rent/products/google-tv-home-projector",
-    "imageUrl": "https://strapi.monis.rent/uploads/Wanbo_Mozart_1_Pro_1_f3c6eb5398.jpg",
+    "imageUrl": "/products/transparent/google-tv-home-projector.png",
     "shortDescription": "1200 ANSI Lumens projector with Full HD native resolution, 4K online content support, HDR10, Google TV and 20W bass speaker.",
     "specs": {
       "brightness": "1200 ANSI Lumens",
@@ -982,7 +982,7 @@
     "category": "audio-video",
     "name": "Marshall Woburn III Bluetooth",
     "productUrl": "https://www.monis.rent/products/marshall-woburn-ii-bluetooth",
-    "imageUrl": "https://strapi.monis.rent/uploads/marshall_woburn_2_1_227171e0f8.jpg",
+    "imageUrl": "/products/transparent/marshall-woburn-iii-bluetooth.png",
     "shortDescription": "Bluetooth speaker with 1-inch tweeters, dual 5.25-inch subwoofers, RCA/3.5mm inputs and 110W power.",
     "specs": {
       "model": "Woburn II / Woburn III",
@@ -1008,7 +1008,7 @@
     "category": "audio-video",
     "name": "Pioneer DJ Controller",
     "productUrl": "https://www.monis.rent/products/pioneer-dj-controller",
-    "imageUrl": "https://strapi.monis.rent/uploads/Pioneer_DDJ_FLX_4_DJ_Controller_1_e10d47ee5f.jpg",
+    "imageUrl": "/products/transparent/pioneer-dj-controller.png",
     "shortDescription": "2-channel DJ controller, USB-C powered, rekordbox and Serato compatible, Smart Mixing, Bluetooth audio input.",
     "specs": {
       "model": "Pioneer DDJ-FLX4",
@@ -1033,7 +1033,7 @@
     "category": "audio-video",
     "name": "Wanbo T6 Projector",
     "productUrl": "https://www.monis.rent/products/wanbo-t6-projector",
-    "imageUrl": "https://strapi.monis.rent/uploads/Projector_Wanbo_T6_Max_1_aa4529e8fd.jpg",
+    "imageUrl": "/products/transparent/wanbo-t6-projector.png",
     "shortDescription": "Full HD projector with 550 ANSI Lumens, projection up to 120 inches, built-in speakers, Android OS, Wi‑Fi and Bluetooth.",
     "specs": {
       "model": "T6 Max",
@@ -1058,7 +1058,7 @@
     "category": "audio-video",
     "name": "Apple HomePod",
     "productUrl": "https://www.monis.rent/products/apple-home-pod",
-    "imageUrl": "https://strapi.monis.rent/uploads/Apple_homepod_5_16403deafa.jpg",
+    "imageUrl": "/products/transparent/apple-homepod.png",
     "shortDescription": "Apple HomePod 2nd Gen with high-excursion woofer, five tweeters, spatial audio, Siri, AirPlay 2, Matter/Thread, Bluetooth 5.0 and Wi‑Fi.",
     "specs": {
       "model": "Apple HomePod 2nd generation",
@@ -1083,7 +1083,7 @@
     "category": "audio-video",
     "name": "XLR Female to 3.5mm Cable",
     "productUrl": "https://www.monis.rent/products/xlr-female-to-3-5mm-cable",
-    "imageUrl": "https://strapi.monis.rent/uploads/XLR_to_3_5mm_Cable_Photo_1_37b141dafc.jpg",
+    "imageUrl": "/products/transparent/xlr-female-to-3-5mm-cable.png",
     "shortDescription": "Canare XLR Female to 3.5mm gold-plated audio cable, compatible with Podcast Microphone Kit.",
     "specs": {
       "model": "Canare L-2T2S",
