@@ -73,7 +73,7 @@ function isDeskAccessory(product: CatalogProduct) {
 }
 
 function isAudio(product: CatalogProduct) {
-  return getProductSection(product) === "audio-video";
+  return getProductSection(product) === "audio-video" && !normalizedText(product).includes("google-tv-home-projector");
 }
 
 function isGaming(product: CatalogProduct) {
@@ -160,7 +160,7 @@ const slots: Slot[] = [
     zIndex: "z-[55]",
     accepts: isWebcam,
     placement: () => ({
-      slot: "left-[50%] top-[37%] -translate-x-1/2",
+      slot: "left-[50%] top-[39%] -translate-x-1/2",
       sizeClass: "h-8 w-12 sm:h-10 sm:w-16",
       imageClass: desktopImageClass,
     }),
@@ -184,7 +184,7 @@ const slots: Slot[] = [
     zIndex: "z-[45]",
     accepts: isMouse,
     placement: () => ({
-      slot: "left-[57%] top-[50%] -translate-x-1/2",
+      slot: "left-[55%] top-[50%] -translate-x-1/2",
       sizeClass: "h-10 w-14 sm:h-[3.25rem] sm:w-[4.5rem]",
       imageClass: desktopImageClass,
     }),
@@ -206,8 +206,8 @@ const slots: Slot[] = [
     menuLabel: "Compact computer or console",
     accepts: (product) => isCompactComputer(product) || isConsoleOrGamingAccessory(product),
     placement: () => ({
-      slot: "left-[68%] top-[50%] -translate-x-1/2",
-      sizeClass: "h-12 w-20 sm:h-18 sm:w-30",
+      slot: "left-[63%] top-[48%] -translate-x-1/2",
+      sizeClass: "h-16 w-[6.5rem] sm:h-24 sm:w-[9.5rem]",
       imageClass: desktopImageClass,
     }),
   },
@@ -218,8 +218,8 @@ const slots: Slot[] = [
     zIndex: "z-[25]",
     accepts: isWallDisplay,
     placement: () => ({
-      slot: "left-[50%] top-[22%] -translate-x-1/2",
-      sizeClass: "h-24 w-44 sm:h-36 sm:w-64",
+      slot: "left-[50%] top-[13%] -translate-x-1/2",
+      sizeClass: "h-[8.5rem] w-[15.5rem] sm:h-52 sm:w-[23rem]",
       imageClass: "drop-shadow-[0_18px_24px_rgba(20,20,20,0.42)]",
     }),
   },
@@ -230,7 +230,7 @@ const slots: Slot[] = [
     accepts: isSmartHome,
     placement: () => ({
       slot: "left-[20%] top-[63%] -translate-x-1/2",
-      sizeClass: "h-20 w-28 sm:h-32 sm:w-44",
+      sizeClass: "h-[6.5rem] w-[9.5rem] sm:h-[10.5rem] sm:w-[14.5rem]",
       imageClass: "drop-shadow-[0_16px_20px_rgba(20,20,20,0.38)]",
     }),
   },
@@ -465,6 +465,7 @@ export function WorkspacePreview({
   onReplaceProduct,
 }: WorkspacePreviewProps) {
   const [openSlotId, setOpenSlotId] = useState<string | null>(null);
+  const [slotOverrides, setSlotOverrides] = useState<SlotOverrides>({});
 
   const selectedProductList = useMemo(
     () => selectedProducts.map(({ product }) => product),
@@ -476,9 +477,17 @@ export function WorkspacePreview({
     [selectedProductList],
   );
 
+  const activeSlotOverrides = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(slotOverrides).filter(([productId]) => selectedProductIds.has(productId)),
+      ),
+    [selectedProductIds, slotOverrides],
+  );
+
   const assignedProducts = useMemo(
-    () => assignProductsToSlots(selectedProductList),
-    [selectedProductList],
+    () => assignProductsToSlots(selectedProductList, activeSlotOverrides),
+    [activeSlotOverrides, selectedProductList],
   );
 
   const assignedSlots = slots.map<AssignedSlot>((slot) => ({
@@ -525,14 +534,33 @@ export function WorkspacePreview({
               )
             }
             onSelectProduct={(id) => {
+              setSlotOverrides((current) => ({
+                ...current,
+                [id]: assignedSlot.slot.id,
+              }));
               onSelectProduct(id);
               setOpenSlotId(null);
             }}
             onReplaceProduct={(currentId, nextId) => {
+              setSlotOverrides((current) => {
+                const remainingOverrides = { ...current };
+                delete remainingOverrides[currentId];
+
+                return {
+                  ...remainingOverrides,
+                  [nextId]: assignedSlot.slot.id,
+                };
+              });
               onReplaceProduct(currentId, nextId);
               setOpenSlotId(null);
             }}
             onRemoveProduct={(id) => {
+              setSlotOverrides((current) => {
+                const remainingOverrides = { ...current };
+                delete remainingOverrides[id];
+
+                return remainingOverrides;
+              });
               onRemoveProduct(id);
               setOpenSlotId(null);
             }}
