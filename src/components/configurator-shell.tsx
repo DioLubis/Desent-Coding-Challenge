@@ -15,10 +15,14 @@ import {
 } from "lucide-react";
 import { ProductSelection } from "@/components/product-selection";
 import { SummaryCheckout } from "@/components/summary-checkout";
-import { WorkspacePreview } from "@/components/workspace-preview";
+import {
+  maxPreviewItemsBySection,
+  WorkspacePreview,
+} from "@/components/workspace-preview";
 import {
   defaultConfiguratorSelections,
   findProduct,
+  formatCategoryLabel,
   formatCurrency,
   products,
   type CatalogProduct,
@@ -189,6 +193,23 @@ export function ConfiguratorShell() {
   const toggleProduct = (id: string) => {
     setConfiguratorState((current) => {
       const isSelected = current.selectedProducts.some((item) => item.id === id);
+      const product = findProduct(id);
+
+      if (!isSelected && product) {
+        const sectionLimit = maxPreviewItemsBySection[product.section];
+        const selectedInSection = current.selectedProducts.filter((item) => {
+          const selectedProduct = findProduct(item.id);
+
+          return selectedProduct?.section === product.section;
+        }).length;
+
+        if (sectionLimit !== undefined && selectedInSection >= sectionLimit) {
+          setToastMessage(`${formatCategoryLabel(product.section)} slots are full.`);
+
+          return current;
+        }
+      }
+
       const selectedProducts = isSelected
         ? current.selectedProducts.filter((item) => item.id !== id)
         : [...current.selectedProducts, { id, quantity: 1 }];
@@ -392,7 +413,11 @@ export function ConfiguratorShell() {
             copy="The preview updates as you choose products, so the request feels designed before it is sent."
           />
           <div className="mt-6">
-            <WorkspacePreview selectedProducts={selectedProducts} />
+            <WorkspacePreview
+              products={products}
+              selectedProducts={selectedProducts}
+              onSelectProduct={toggleProduct}
+            />
           </div>
         </div>
       </section>
