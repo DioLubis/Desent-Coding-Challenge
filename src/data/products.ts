@@ -235,22 +235,6 @@ export const findChair = (id: string | null) =>
 export const findAccessory = (id: string) =>
   accessories.find((accessory) => accessory.id === id);
 
-export const calculateTotalMonthlyPrice = (
-  selectedDesk: string | null,
-  selectedChair: string | null,
-  selectedAccessories: SelectedAccessory[],
-) => {
-  const deskTotal = findDesk(selectedDesk)?.pricePerMonth ?? 0;
-  const chairTotal = findChair(selectedChair)?.pricePerMonth ?? 0;
-  const accessoryTotal = selectedAccessories.reduce((total, selectedAccessory) => {
-    const accessory = findAccessory(selectedAccessory.id);
-
-    return total + (accessory?.pricePerMonth ?? 0) * selectedAccessory.quantity;
-  }, 0);
-
-  return deskTotal + chairTotal + accessoryTotal;
-};
-
 export const formatIdr = (value: number) =>
   new Intl.NumberFormat("id-ID", {
     style: "currency",

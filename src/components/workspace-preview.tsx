@@ -1,4 +1,4 @@
-import { Check, MapPin, Move3D, Sparkles, Waves } from "lucide-react";
+import { Check, MapPin, Move3D, Sparkles, Star, Waves } from "lucide-react";
 import type { Accessory, Chair, Desk } from "@/data/products";
 
 type WorkspacePreviewProps = {
@@ -81,6 +81,7 @@ function AccessoryVisual({
   return (
     <div
       className={`workspace-pop absolute ${slot} z-30 transition duration-300 hover:-translate-y-2`}
+      style={{ animationDelay: `${index * 70}ms` }}
     >
       <div
         className={`relative grid size-11 place-items-center rounded-2xl bg-gradient-to-br ${accessory.visual.accent} shadow-[0_16px_36px_rgba(35,24,18,0.28)] ring-4 ring-white/55 sm:size-16`}
@@ -107,12 +108,15 @@ export function WorkspacePreview({
   );
 
   return (
-    <section className="relative min-h-[540px] overflow-hidden rounded-[1.75rem] border border-white/70 bg-[#fffaf0] shadow-[0_18px_70px_rgba(77,55,35,0.14)] sm:min-h-[640px] sm:rounded-[2rem]">
-      <div className="absolute inset-x-0 top-0 h-44 bg-[linear-gradient(180deg,#77c8ce_0%,#d5f1ec_100%)]" />
-      <div className="absolute inset-x-0 top-32 h-24 bg-[#f0c77b]" />
-      <div className="absolute inset-x-0 bottom-0 h-[68%] bg-[linear-gradient(160deg,#cf8b47_0%,#f3bf6b_42%,#e8a45b_100%)]" />
-      <div className="absolute left-[6%] top-14 h-20 w-20 rounded-full bg-[#f8d267] shadow-[0_0_60px_rgba(248,210,103,0.8)]" />
-      <div className="absolute right-[8%] top-20 flex gap-2 text-[#2f7d88]">
+    <section
+      aria-label="Workspace visual preview"
+      className="relative min-h-[540px] overflow-hidden rounded-[1.75rem] border border-white/70 bg-[#fffaf0] shadow-[0_18px_70px_rgba(77,55,35,0.14)] sm:min-h-[640px] sm:rounded-[2rem]"
+    >
+      <div aria-hidden="true" className="absolute inset-x-0 top-0 h-44 bg-[linear-gradient(180deg,#77c8ce_0%,#d5f1ec_100%)]" />
+      <div aria-hidden="true" className="absolute inset-x-0 top-32 h-24 bg-[#f0c77b]" />
+      <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-[68%] bg-[linear-gradient(160deg,#cf8b47_0%,#f3bf6b_42%,#e8a45b_100%)]" />
+      <div aria-hidden="true" className="absolute left-[6%] top-14 h-20 w-20 rounded-full bg-[#f8d267] shadow-[0_0_60px_rgba(248,210,103,0.8)]" />
+      <div aria-hidden="true" className="absolute right-[8%] top-20 flex gap-2 text-[#2f7d88]">
         <Waves className="size-9" />
         <Waves className="size-9 translate-y-3" />
         <Waves className="size-9" />
@@ -123,13 +127,19 @@ export function WorkspacePreview({
           <div className="rounded-full bg-white/80 px-4 py-2 text-sm font-black shadow-lg backdrop-blur">
             Canggu studio setup
           </div>
+          {hasStarted ? (
+            <div className="flex items-center gap-2 rounded-full bg-[#f5b76b] px-4 py-2 text-sm font-black text-[#201b18] shadow-lg">
+              <Star className="size-4 fill-[#201b18]" />
+              Recommended Setup
+            </div>
+          ) : null}
           <div className="flex items-center gap-2 rounded-full bg-[#201b18] px-4 py-2 text-sm font-bold text-white shadow-lg">
             <MapPin className="size-4 text-[#f5b76b]" />
             Bali delivery
           </div>
         </div>
 
-        <div className="relative mx-auto h-[350px] w-full max-w-3xl sm:h-[460px]">
+        <div className="relative mx-auto h-[350px] w-full max-w-3xl sm:h-[460px]" aria-live="polite">
           <div className="absolute bottom-8 left-1/2 h-36 w-[82%] max-w-[560px] -translate-x-1/2 rounded-[50%] bg-[#6e4c37]/22 blur-sm" />
 
           {!hasStarted ? (

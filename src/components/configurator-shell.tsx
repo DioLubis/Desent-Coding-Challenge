@@ -1,32 +1,217 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useMemo, useState } from "react";
-import { ArrowDown, CalendarDays, MapPin, PackageCheck, UsersRound } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  ArrowDown,
+  CalendarDays,
+  Check,
+  Copy,
+  MapPin,
+  PackageCheck,
+  Sparkles,
+  UsersRound,
+  Wand2,
+} from "lucide-react";
 import { ProductSelection } from "@/components/product-selection";
 import { SummaryCheckout } from "@/components/summary-checkout";
 import { WorkspacePreview } from "@/components/workspace-preview";
 import {
   accessories,
-  calculateTotalMonthlyPrice,
   chairs,
   defaultConfiguratorSelections,
   desks,
   findAccessory,
   findChair,
   findDesk,
+  formatIdr,
   type ConfiguratorState,
+  type SelectedAccessory,
 } from "@/data/products";
+import { calculateMonthlyTotal } from "@/lib/pricing";
+
+const STORAGE_KEY = "monis-rent-selected-workspace";
+
+const setupPresets: Array<{
+  name: string;
+  description: string;
+  selectedDesk: string;
+  selectedChair: string;
+  selectedAccessories: SelectedAccessory[];
+}> = [
+  {
+    name: "Freelancer Setup",
+    description: "A polished solo desk for calls, content, and focused days.",
+    selectedDesk: "bamboo-standing-desk",
+    selectedChair: "ergo-cloud-chair",
+    selectedAccessories: [
+      { id: "creator-monitor", quantity: 1 },
+      { id: "sunset-task-lamp", quantity: 1 },
+      { id: "tropical-plant", quantity: 1 },
+    ],
+  },
+  {
+    name: "Startup Team Setup",
+    description: "More screen space, planning tools, coffee, and storage.",
+    selectedDesk: "founder-studio-desk",
+    selectedChair: "task-pro-chair",
+    selectedAccessories: [
+      { id: "creator-monitor", quantity: 2 },
+      { id: "coffee-machine", quantity: 1 },
+      { id: "open-shelf", quantity: 1 },
+      { id: "planning-board", quantity: 1 },
+    ],
+  },
+  {
+    name: "Focus Setup",
+    description: "Compact, calm, and easy to fit into a villa corner.",
+    selectedDesk: "compact-focus-desk",
+    selectedChair: "rattan-lounge-chair",
+    selectedAccessories: [
+      { id: "sunset-task-lamp", quantity: 1 },
+      { id: "tropical-plant", quantity: 1 },
+    ],
+  },
+];
+
+function buildConfiguratorState(
+  selectedDesk: string | null,
+  selectedChair: string | null,
+  selectedAccessories: SelectedAccessory[],
+): ConfiguratorState {
+  return {
+    selectedDesk,
+    selectedChair,
+    selectedAccessories,
+    totalMonthlyPrice: calculateMonthlyTotal(
+      selectedDesk,
+      selectedChair,
+      selectedAccessories,
+    ),
+  };
+}
+
+function normalizeAccessories(selectedAccessories: SelectedAccessory[]) {
+  return selectedAccessories
+    .map((selectedAccessory) => {
+      const accessory = accessories.find((item) => item.id === selectedAccessory.id);
+      if (!accessory) return null;
+
+      const maxQuantity = accessory.maxQuantity ?? 1;
+      const quantity = Math.max(1, Math.min(selectedAccessory.quantity, maxQuantity));
+
+      return { id: accessory.id, quantity };
+    })
+    .filter((item) => item !== null);
+}
+
+function stateFromSearchParams(searchParams: URLSearchParams) {
+  const selectedDesk = desks.some((desk) => desk.id === searchParams.get("desk"))
+    ? searchParams.get("desk")
+    : null;
+  const selectedChair = chairs.some((chair) => chair.id === searchParams.get("chair"))
+    ? searchParams.get("chair")
+    : null;
+  const selectedAccessories = normalizeAccessories(
+    (searchParams.get("accessories") ?? "")
+      .split(",")
+      .filter(Boolean)
+      .map((entry) => {
+        const [id, quantity = "1"] = entry.split(":");
+
+        return { id, quantity: Number.parseInt(quantity, 10) || 1 };
+      }),
+  );
+
+  if (!selectedDesk && !selectedChair && selectedAccessories.length === 0) return null;
+
+  return buildConfiguratorState(selectedDesk, selectedChair, selectedAccessories);
+}
+
+function stateFromStorageValue(value: string | null) {
+  if (!value) return null;
+
+  try {
+    const parsed = JSON.parse(value) as Partial<ConfiguratorState>;
+    const selectedDesk =
+      typeof parsed.selectedDesk === "string" &&
+      desks.some((desk) => desk.id === parsed.selectedDesk)
+        ? parsed.selectedDesk
+        : null;
+    const selectedChair =
+      typeof parsed.selectedChair === "string" &&
+      chairs.some((chair) => chair.id === parsed.selectedChair)
+        ? parsed.selectedChair
+        : null;
+    const selectedAccessories = normalizeAccessories(
+      Array.isArray(parsed.selectedAccessories) ? parsed.selectedAccessories : [],
+    );
+
+    return buildConfiguratorState(selectedDesk, selectedChair, selectedAccessories);
+  } catch {
+    return null;
+  }
+}
+
+function setupSearchParams(state: ConfiguratorState) {
+  const searchParams = new URLSearchParams();
+
+  if (state.selectedDesk) searchParams.set("desk", state.selectedDesk);
+  if (state.selectedChair) searchParams.set("chair", state.selectedChair);
+  if (state.selectedAccessories.length > 0) {
+    searchParams.set(
+      "accessories",
+      state.selectedAccessories.map((item) => `${item.id}:${item.quantity}`).join(","),
+    );
+  }
+
+  return searchParams;
+}
 
 export function ConfiguratorShell() {
-  const [configuratorState, setConfiguratorState] = useState<ConfiguratorState>(() => ({
-    ...defaultConfiguratorSelections,
-    totalMonthlyPrice: calculateTotalMonthlyPrice(
+  const [configuratorState, setConfiguratorState] = useState<ConfiguratorState>(() =>
+    buildConfiguratorState(
       defaultConfiguratorSelections.selectedDesk,
       defaultConfiguratorSelections.selectedChair,
       defaultConfiguratorSelections.selectedAccessories,
     ),
-  }));
+  );
+  const [hasLoadedSavedSetup, setHasLoadedSavedSetup] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      const sharedState = stateFromSearchParams(new URLSearchParams(window.location.search));
+      const storedState = stateFromStorageValue(window.localStorage.getItem(STORAGE_KEY));
+      const restoredState = sharedState ?? storedState;
+
+      if (restoredState) setConfiguratorState(restoredState);
+      setHasLoadedSavedSetup(true);
+    }, 0);
+
+    return () => window.clearTimeout(timeout);
+  }, []);
+
+  useEffect(() => {
+    if (!hasLoadedSavedSetup) return;
+
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        selectedDesk: configuratorState.selectedDesk,
+        selectedChair: configuratorState.selectedChair,
+        selectedAccessories: configuratorState.selectedAccessories,
+      }),
+    );
+  }, [configuratorState, hasLoadedSavedSetup]);
+
+  useEffect(() => {
+    if (!toastMessage) return;
+
+    const timeout = window.setTimeout(() => setToastMessage(""), 2200);
+
+    return () => window.clearTimeout(timeout);
+  }, [toastMessage]);
 
   const selectedDesk = useMemo(
     () => findDesk(configuratorState.selectedDesk),
@@ -62,7 +247,7 @@ export function ConfiguratorShell() {
 
       return {
         ...next,
-        totalMonthlyPrice: calculateTotalMonthlyPrice(
+        totalMonthlyPrice: calculateMonthlyTotal(
           next.selectedDesk,
           next.selectedChair,
           next.selectedAccessories,
@@ -81,7 +266,7 @@ export function ConfiguratorShell() {
       return {
         ...current,
         selectedAccessories,
-        totalMonthlyPrice: calculateTotalMonthlyPrice(
+        totalMonthlyPrice: calculateMonthlyTotal(
           current.selectedDesk,
           current.selectedChair,
           selectedAccessories,
@@ -109,13 +294,48 @@ export function ConfiguratorShell() {
       return {
         ...current,
         selectedAccessories,
-        totalMonthlyPrice: calculateTotalMonthlyPrice(
+        totalMonthlyPrice: calculateMonthlyTotal(
           current.selectedDesk,
           current.selectedChair,
           selectedAccessories,
         ),
       };
     });
+  };
+
+  const applyPreset = (preset: (typeof setupPresets)[number]) => {
+    setConfiguratorState(
+      buildConfiguratorState(
+        preset.selectedDesk,
+        preset.selectedChair,
+        preset.selectedAccessories,
+      ),
+    );
+
+    document.getElementById("preview")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const copySetupLink = async () => {
+    const searchParams = setupSearchParams(configuratorState);
+    const setupUrl = `${window.location.origin}${window.location.pathname}${
+      searchParams.size > 0 ? `?${searchParams.toString()}` : ""
+    }`;
+
+    try {
+      await window.navigator.clipboard.writeText(setupUrl);
+      setToastMessage("Setup link copied.");
+    } catch {
+      const textArea = document.createElement("textarea");
+      textArea.value = setupUrl;
+      textArea.setAttribute("readonly", "");
+      textArea.style.position = "fixed";
+      textArea.style.opacity = "0";
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      textArea.remove();
+      setToastMessage("Setup link copied.");
+    }
   };
 
   const selectedItemCount =
@@ -129,10 +349,16 @@ export function ConfiguratorShell() {
   return (
     <main className="min-h-screen overflow-hidden bg-[#f7f1e8] text-[#201b18]">
       <section className="relative isolate min-h-[92vh] px-4 py-5 sm:px-6 lg:px-8">
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_18%_12%,rgba(255,183,94,0.5),transparent_28%),radial-gradient(circle_at_82%_18%,rgba(80,173,180,0.3),transparent_26%),linear-gradient(135deg,#fff7e9_0%,#f6ecdf_55%,#e6f2ef_100%)]" />
-        <div className="absolute bottom-0 left-0 right-0 -z-10 h-[46%] bg-[linear-gradient(160deg,#d89a52_0%,#f3bf6b_45%,#e5a359_100%)]" />
+        <div
+          className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_18%_12%,rgba(255,183,94,0.5),transparent_28%),radial-gradient(circle_at_82%_18%,rgba(80,173,180,0.3),transparent_26%),linear-gradient(135deg,#fff7e9_0%,#f6ecdf_55%,#e6f2ef_100%)]"
+          aria-hidden="true"
+        />
+        <div
+          className="absolute bottom-0 left-0 right-0 -z-10 h-[46%] bg-[linear-gradient(160deg,#d89a52_0%,#f3bf6b_45%,#e5a359_100%)]"
+          aria-hidden="true"
+        />
         <div className="mx-auto flex min-h-[86vh] max-w-7xl flex-col">
-          <nav className="flex items-center justify-between py-2">
+          <nav className="flex items-center justify-between py-2" aria-label="Primary">
             <p className="text-sm font-black uppercase tracking-[0.2em] text-[#b45f32]">
               monis.rent
             </p>
@@ -171,7 +397,10 @@ export function ConfiguratorShell() {
               </div>
             </div>
 
-            <div className="relative mx-auto min-h-[340px] w-full max-w-[620px] sm:min-h-[420px] lg:max-w-none">
+            <div
+              className="relative mx-auto min-h-[340px] w-full max-w-[620px] sm:min-h-[420px] lg:max-w-none"
+              aria-hidden="true"
+            >
               <div className="absolute left-1/2 top-20 h-8 w-[72%] -translate-x-1/2 rounded-full bg-[#8d5836] shadow-2xl" />
               <div className="absolute left-[18%] top-28 h-32 w-4 rounded-full bg-[#70422d]" />
               <div className="absolute right-[18%] top-28 h-32 w-4 rounded-full bg-[#70422d]" />
@@ -204,6 +433,64 @@ export function ConfiguratorShell() {
             title="Choose the pieces that match how you work."
             copy="Start with the furniture, then layer in practical comforts like monitors, lighting, storage, plants, and coffee."
           />
+          <div className="mt-6 rounded-[1.75rem] border border-white/70 bg-white/65 p-4 shadow-[0_18px_70px_rgba(77,55,35,0.1)] backdrop-blur sm:p-5">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="inline-flex items-center gap-2 rounded-full bg-[#201b18] px-3 py-1.5 text-xs font-black uppercase tracking-[0.12em] text-[#f5b76b]">
+                  <Wand2 className="size-3.5" />
+                  Fast presets
+                </p>
+                <h3 className="mt-3 text-2xl font-black tracking-tight">Start from a proven setup.</h3>
+              </div>
+              <p className="max-w-md text-sm font-medium leading-6 text-[#6c5e53]">
+                Use a preset as a shortcut, then fine-tune every item below.
+              </p>
+            </div>
+            <div className="mt-4 grid gap-3 md:grid-cols-3">
+              {setupPresets.map((preset, index) => (
+                <button
+                  key={preset.name}
+                  type="button"
+                  onClick={() => applyPreset(preset)}
+                  aria-label={`Apply ${preset.name}`}
+                  className="group rounded-[1.35rem] border border-[#eadfce] bg-white/82 p-4 text-left shadow-sm transition duration-200 hover:-translate-y-1 hover:border-[#d78f43] hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f06f61]"
+                >
+                  <span className="flex items-center justify-between gap-3">
+                    <span className="grid size-10 place-items-center rounded-2xl bg-[#f6ecdf] text-sm font-black text-[#b45f32]">
+                      0{index + 1}
+                    </span>
+                    {index === 0 ? (
+                      <span className="rounded-full bg-[#e2f2ef] px-2.5 py-1 text-[10px] font-black uppercase text-[#245b61]">
+                        Recommended
+                      </span>
+                    ) : null}
+                  </span>
+                  <span className="mt-4 block text-base font-black">{preset.name}</span>
+                  <span className="mt-2 block text-sm leading-6 text-[#6c5e53]">
+                    {preset.description}
+                  </span>
+                  <span className="mt-4 inline-flex items-center gap-2 text-sm font-black text-[#b45f32]">
+                    Apply setup
+                    <ArrowDown className="size-4 transition group-hover:translate-y-0.5" />
+                  </span>
+                </button>
+              ))}
+            </div>
+            <div className="mt-4 flex flex-col gap-3 rounded-[1.25rem] bg-[#fff7e9] p-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm font-bold leading-6 text-[#6c5e53]">
+                Your setup is saved on this device and can be shared as a link.
+              </p>
+              <button
+                type="button"
+                onClick={copySetupLink}
+                aria-label="Copy selected workspace setup link"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-[#201b18] px-4 text-sm font-black text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-[#3a302a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f06f61]"
+              >
+                <Copy className="size-4" />
+                Copy Setup Link
+              </button>
+            </div>
+          </div>
           <div className="mt-6">
             <ProductSelection
               state={configuratorState}
@@ -296,6 +583,21 @@ export function ConfiguratorShell() {
           </div>
         </div>
       </section>
+
+      <FloatingSummary
+        selectedItemCount={selectedItemCount}
+        totalMonthlyPrice={configuratorState.totalMonthlyPrice}
+        onCopySetupLink={copySetupLink}
+      />
+      {toastMessage ? (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed bottom-5 left-1/2 z-[60] -translate-x-1/2 rounded-full bg-[#201b18] px-5 py-3 text-sm font-black text-white shadow-2xl"
+        >
+          {toastMessage}
+        </div>
+      ) : null}
     </main>
   );
 }
@@ -321,6 +623,61 @@ function SectionIntro({
         {copy}
       </p>
     </div>
+  );
+}
+
+function FloatingSummary({
+  selectedItemCount,
+  totalMonthlyPrice,
+  onCopySetupLink,
+}: {
+  selectedItemCount: number;
+  totalMonthlyPrice: number;
+  onCopySetupLink: () => void;
+}) {
+  if (selectedItemCount === 0) return null;
+
+  return (
+    <aside
+      aria-label="Floating workspace summary"
+      className="fixed bottom-5 right-5 z-50 hidden w-72 rounded-[1.5rem] border border-white/70 bg-white/86 p-4 text-[#201b18] shadow-[0_18px_70px_rgba(32,27,24,0.22)] backdrop-blur-xl xl:block"
+    >
+      <div className="flex items-center gap-3">
+        <div className="grid size-11 place-items-center rounded-2xl bg-[#201b18] text-[#f5b76b]">
+          <Sparkles className="size-5" />
+        </div>
+        <div>
+          <p className="text-xs font-black uppercase tracking-[0.14em] text-[#b45f32]">
+            Live quote
+          </p>
+          <p className="text-sm font-bold text-[#6c5e53]">
+            {selectedItemCount} selected item{selectedItemCount === 1 ? "" : "s"}
+          </p>
+        </div>
+      </div>
+      <div className="mt-4 flex items-end justify-between gap-3 border-t border-[#eadfce] pt-4">
+        <span className="text-sm font-black">Monthly</span>
+        <span key={totalMonthlyPrice} className="price-pop text-xl font-black">
+          {formatIdr(totalMonthlyPrice)}
+        </span>
+      </div>
+      <a
+        href="#checkout"
+        className="mt-4 flex h-11 items-center justify-center gap-2 rounded-2xl bg-[#f06f61] text-sm font-black text-white shadow-lg shadow-[#f06f61]/25 transition hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#201b18]"
+      >
+        Review request
+        <Check className="size-4" />
+      </a>
+      <button
+        type="button"
+        onClick={onCopySetupLink}
+        aria-label="Copy selected workspace setup link"
+        className="mt-2 flex h-10 w-full items-center justify-center gap-2 rounded-2xl bg-[#201b18] text-xs font-black text-white transition hover:-translate-y-0.5 hover:bg-[#3a302a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f06f61]"
+      >
+        <Copy className="size-3.5" />
+        Copy Setup Link
+      </button>
+    </aside>
   );
 }
 

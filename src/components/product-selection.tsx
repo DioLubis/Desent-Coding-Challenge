@@ -77,13 +77,16 @@ function FurnitureCard({ item, isSelected, onClick }: FurnitureCardProps) {
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={isSelected}
       className={`group rounded-[1.6rem] border p-2 text-left transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f06f61] ${
         isSelected
           ? "border-[#201b18] bg-[#201b18] text-white shadow-xl shadow-[#201b18]/15 ring-2 ring-[#f5b76b]/45"
           : "border-[#eadfce] bg-white/82 hover:-translate-y-0.5 hover:border-[#d78f43] hover:shadow-lg"
       }`}
     >
-      <FurnitureSilhouette item={item} isSelected={isSelected} />
+      <div aria-hidden="true">
+        <FurnitureSilhouette item={item} isSelected={isSelected} />
+      </div>
       <div className="px-2 pb-2 pt-3">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -146,7 +149,7 @@ function AccessoryCard({
   const maxQuantity = accessory.maxQuantity ?? 1;
 
   return (
-    <div
+    <article
       className={`group rounded-[1.6rem] border p-3 transition duration-200 ${
         isSelected
           ? "accessory-added border-[#201b18] bg-[#201b18] text-white shadow-xl shadow-[#201b18]/15 ring-2 ring-[#f5b76b]/45"
@@ -156,6 +159,7 @@ function AccessoryCard({
       <div className="flex items-start gap-3">
         <div
           className={`relative grid size-14 shrink-0 place-items-center rounded-2xl bg-gradient-to-br ${accessory.visual.accent} shadow-md`}
+          aria-hidden="true"
         >
           <Icon className="size-6 text-white" />
           {isSelected ? (
@@ -202,7 +206,7 @@ function AccessoryCard({
             >
               <Minus className="size-4" />
             </button>
-            <span className="w-16 text-center text-xs font-black">
+            <span className="w-16 text-center text-xs font-black" aria-live="polite">
               {quantity}/{maxQuantity}
             </span>
             <button
@@ -224,6 +228,7 @@ function AccessoryCard({
         <button
           type="button"
           onClick={onToggle}
+          aria-pressed={isSelected}
           className={`h-11 shrink-0 rounded-full px-4 text-xs font-black transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
             isSelected
               ? "bg-white/12 text-white hover:bg-white/20 focus-visible:outline-[#f5b76b]"
@@ -233,7 +238,7 @@ function AccessoryCard({
           {isSelected ? "Remove" : accessoryActionLabel(accessory)}
         </button>
       </div>
-    </div>
+    </article>
   );
 }
 
@@ -252,11 +257,16 @@ export function ProductSelection({
     state.selectedAccessories.find((item) => item.id === id)?.quantity ?? 0;
 
   return (
-    <aside className="rounded-[1.75rem] border border-white/70 bg-white/72 p-4 shadow-[0_18px_70px_rgba(77,55,35,0.12)] backdrop-blur sm:rounded-[2rem] sm:p-5 lg:p-6">
+    <section
+      aria-labelledby="product-selection-title"
+      className="rounded-[1.75rem] border border-white/70 bg-white/72 p-4 shadow-[0_18px_70px_rgba(77,55,35,0.12)] backdrop-blur sm:rounded-[2rem] sm:p-5 lg:p-6"
+    >
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#b45f32]">Gear</p>
-          <h2 className="mt-1 text-2xl font-black tracking-tight">Pick the pieces</h2>
+          <h2 id="product-selection-title" className="mt-1 text-2xl font-black tracking-tight">
+            Pick the pieces
+          </h2>
         </div>
         <span className="rounded-full bg-[#e2f2ef] px-3 py-1 text-sm font-bold text-[#245b61]">
           {selectedItemCount} items
@@ -335,6 +345,6 @@ export function ProductSelection({
           </div>
         </section>
       </div>
-    </aside>
+    </section>
   );
 }
