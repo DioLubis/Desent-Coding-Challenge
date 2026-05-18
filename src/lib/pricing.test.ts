@@ -88,16 +88,16 @@ describe("Pricing Functions", () => {
   });
 
   describe("calculateSelectedSetupTotal", () => {
-    it("should exclude unavailable items from totals", () => {
+    it("should include estimated prices in totals", () => {
       const result = calculateSelectedSetupTotal([
         { id: "monitor-a24i-2026", quantity: 1 },
         { id: "monitor-27-4k-multimedia", quantity: 1 },
         { id: "monitor-a27i", quantity: 1 },
       ]);
 
-      expect(result.monthlyTotal).toBe(72);
-      expect(result.weeklyTotal).toBe(18);
-      expect(result.unavailableCount).toBe(1);
+      expect(result.monthlyTotal).toBe(104);
+      expect(result.weeklyTotal).toBe(26);
+      expect(result.unavailableCount).toBe(0);
     });
   });
 
