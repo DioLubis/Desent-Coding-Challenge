@@ -16,14 +16,15 @@ import {
 import { ProductSelection } from "@/components/product-selection";
 import { SummaryCheckout } from "@/components/summary-checkout";
 import {
-  maxPreviewItemsBySection,
+  canPlaceProductInPreview,
   WorkspacePreview,
 } from "@/components/workspace-preview";
 import {
   defaultConfiguratorSelections,
   findProduct,
-  formatCategoryLabel,
   formatCurrency,
+  getMonthlyPrice,
+  getWeeklyPrice,
   products,
   type CatalogProduct,
   type ConfiguratorState,
@@ -196,16 +197,12 @@ export function ConfiguratorShell() {
       const product = findProduct(id);
 
       if (!isSelected && product) {
-        const sectionLimit = maxPreviewItemsBySection[product.section];
-        const selectedInSection = current.selectedProducts.filter((item) => {
-          const selectedProduct = findProduct(item.id);
+        const currentProducts = current.selectedProducts
+          .map((item) => findProduct(item.id))
+          .filter((item): item is CatalogProduct => Boolean(item));
 
-          return selectedProduct?.section === product.section;
-        }).length;
-
-        if (sectionLimit !== undefined && selectedInSection >= sectionLimit) {
-          setToastMessage(`${formatCategoryLabel(product.section)} slots are full.`);
-
+        if (!canPlaceProductInPreview(product, currentProducts)) {
+          setToastMessage("That item does not fit in the current preview slots.");
           return current;
         }
       }
@@ -215,6 +212,26 @@ export function ConfiguratorShell() {
         : [...current.selectedProducts, { id, quantity: 1 }];
 
       return buildConfiguratorState(selectedProducts);
+    });
+  };
+
+  const removeProduct = (id: string) => {
+    setConfiguratorState((current) =>
+      buildConfiguratorState(current.selectedProducts.filter((item) => item.id !== id)),
+    );
+  };
+
+  const replaceProduct = (currentId: string, nextId: string) => {
+    setConfiguratorState((current) => {
+      const nextProduct = findProduct(nextId);
+
+      if (!nextProduct) return current;
+
+      const selectedProducts = current.selectedProducts.map((item) =>
+        item.id === currentId ? { id: nextProduct.id, quantity: 1 } : item,
+      );
+
+      return buildConfiguratorState(normalizeSelections(selectedProducts));
     });
   };
 
@@ -417,6 +434,8 @@ export function ConfiguratorShell() {
               products={products}
               selectedProducts={selectedProducts}
               onSelectProduct={toggleProduct}
+              onRemoveProduct={removeProduct}
+              onReplaceProduct={replaceProduct}
             />
           </div>
         </div>
@@ -485,6 +504,7 @@ export function ConfiguratorShell() {
       </section>
 
       <FloatingSummary
+        selectedProducts={selectedProducts}
         selectedItemCount={selectedItemCount}
         totalMonthlyPrice={configuratorState.totalMonthlyPrice}
         totalWeeklyPrice={configuratorState.totalWeeklyPrice}
@@ -528,11 +548,13 @@ function SectionIntro({
 }
 
 function FloatingSummary({
+  selectedProducts,
   selectedItemCount,
   totalMonthlyPrice,
   totalWeeklyPrice,
   onCopySetupLink,
 }: {
+  selectedProducts: Array<{ product: CatalogProduct; quantity: number }>;
   selectedItemCount: number;
   totalMonthlyPrice: number | null;
   totalWeeklyPrice: number | null;
@@ -558,14 +580,51 @@ function FloatingSummary({
           </p>
         </div>
       </div>
+
+      <div className="mt-4 max-h-56 space-y-2 overflow-y-auto border-t border-[#eadfce] pt-3">
+        {selectedProducts.map(({ product, quantity }) => {
+          const monthlyPrice = getMonthlyPrice(product);
+          const weeklyPrice = getWeeklyPrice(product);
+
+          return (
+            <div key={product.id} className="rounded-2xl bg-white/62 px-3 py-2">
+              <div className="flex items-start justify-between gap-3">
+                <span className="line-clamp-2 text-xs font-black leading-4">
+                  {product.name}
+                </span>
+                {quantity > 1 ? (
+                  <span className="shrink-0 rounded-full bg-[#f5b76b] px-2 py-0.5 text-[10px] font-black">
+                    {quantity}x
+                  </span>
+                ) : null}
+              </div>
+              <div className="mt-2 grid grid-cols-2 gap-2 text-[11px] font-bold text-[#6c5e53]">
+                <span>
+                  Weekly{" "}
+                  <strong className="block text-[#201b18]">
+                    {weeklyPrice === null ? "Request" : formatCurrency(weeklyPrice)}
+                  </strong>
+                </span>
+                <span className="text-right">
+                  Monthly{" "}
+                  <strong className="block text-[#201b18]">
+                    {monthlyPrice === null ? "Request" : formatCurrency(monthlyPrice)}
+                  </strong>
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
       <div className="mt-4 flex items-end justify-between gap-3 border-t border-[#eadfce] pt-4">
-        <span className="text-sm font-black">Monthly</span>
+        <span className="text-sm font-black">Total monthly</span>
         <span className="price-pop text-sm font-black">
           {totalMonthlyPrice === null ? "Check availability" : formatCurrency(totalMonthlyPrice)}
         </span>
       </div>
       <div className="mt-3 flex items-end justify-between gap-3 border-t border-[#eadfce] pt-3">
-        <span className="text-sm font-black">Weekly</span>
+        <span className="text-sm font-black">Total weekly</span>
         <span className="price-pop text-sm font-black">
           {totalWeeklyPrice === null ? "Price on request" : formatCurrency(totalWeeklyPrice)}
         </span>
